@@ -18,11 +18,6 @@ class Cart(models.Model):
     def total_items(self):
         return sum(item.quantity for item in self.items.all())
     
-    
-    @property
-    def subtotal(self):
-        return sum(item.total_price for item in self.items.all())
-    
 
     def add_product(self, product, product_size, quantity=1):
         cart_item, created = CartItem.objects.get_or_create(
@@ -81,6 +76,3 @@ class CartItem(models.Model):
         return f"{self.product.name} - {self.product_size.size.name} x {self.quantity}"
     
 
-    @property
-    def total_price(self):
-        return Decimal(str(self.product.price)) * self.quantity

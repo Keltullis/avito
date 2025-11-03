@@ -1,0 +1,75 @@
+<div class="space-y-6">
+    <h2 class="text-xl font-bold tracking-tight text-gray-900">Список желаний</h2>
+    
+    {% if wishlist_items %}
+        <div class="space-y-4">
+            {% for item in wishlist_items %}
+            <div class="border border-gray-200 p-4 hover:border-gray-900 transition-colors">
+                <div class="flex gap-4">
+                    <!-- Product Image -->
+                    <div class="w-24 h-24 flex-shrink-0 bg-gray-100 overflow-hidden">
+                        {% if item.product.main_image %}
+                            <img src="{{ item.product.main_image.url }}" 
+                                 alt="{{ item.product.name }}" 
+                                 class="w-full h-full object-cover cursor-pointer"
+                                 hx-get="{% url 'main:product_detail' item.product.slug %}"
+                                 hx-target="#main-content"
+                                 hx-push-url="true">
+                        {% else %}
+                            <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <span class="text-gray-400 text-xs">No Image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-sm font-medium text-gray-900 mb-1 cursor-pointer hover:underline"
+                            hx-get="{% url 'main:product_detail' item.product.slug %}"
+                            hx-target="#main-content"
+                            hx-push-url="true">
+                            {{ item.product.name|upper }}
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ item.product.color|upper }}</p>
+                        <p class="text-xs text-gray-500">Добавлено: {{ item.added_at|date:"d.m.Y" }}</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col gap-2 justify-center">
+                        <button 
+                            class="px-4 py-2 bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
+                            hx-get="{% url 'main:product_detail' item.product.slug %}"
+                            hx-target="#main-content"
+                            hx-push-url="true">
+                            Заказать
+                        </button>
+                        <!-- Removed hx-confirm and changed to POST method for better CSRF handling -->
+                        <button 
+                            class="px-4 py-2 border border-gray-300 text-gray-900 text-xs font-medium hover:border-gray-900 transition-colors whitespace-nowrap"
+                            hx-post="{% url 'users:remove_from_wishlist' item.id %}"
+                            hx-target="#profile-main-content"
+                            hx-swap="innerHTML">
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12 border border-gray-200">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Ваш список желаний пуст</h3>
+            <p class="text-sm text-gray-600 mb-4">Добавьте товары, которые вам нравятся</p>
+            <button 
+                class="px-6 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                hx-get="{% url 'main:index' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+                Перейти к покупкам
+            </button>
+        </div>
+    {% endif %}
+</div>

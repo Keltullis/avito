@@ -1,0 +1,131 @@
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-wide">Создать объявление</h2>
+    
+    <form method="post" enctype="multipart/form-data" 
+          hx-post="{% url 'users:create_listing' %}"
+          hx-target="#profile-main-content"
+          hx-swap="innerHTML">
+        {% csrf_token %}
+        
+        <div class="space-y-4">
+            <!-- Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.category.label }}</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Color -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.color.label }}</label>
+                {{ form.color }}
+                {% if form.color.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.color.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Main Image -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.main_image.label }}</label>
+                {{ form.main_image }}
+                {% if form.main_image.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.main_image.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Additional Images -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">Дополнительные фото (необязательно)</label>
+                <input type="file" name="additional_images" multiple accept="image/*"
+                       class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
+                <p class="text-xs text-gray-600 mt-1">Можно загрузить несколько фотографий</p>
+            </div>
+
+            <!-- Total Stock -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.total_stock.label }}</label>
+                {{ form.total_stock }}
+                {% if form.total_stock.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.total_stock.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Condition -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.condition.label }}</label>
+                {{ form.condition }}
+                {% if form.condition.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.condition.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Material -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.material.label }}</label>
+                {{ form.material }}
+                {% if form.material.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.material.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Brand -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.brand.label }}</label>
+                {{ form.brand }}
+                {% if form.brand.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.brand.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Sizes -->
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">{{ form.sizes.label }}</label>
+                <div class="grid grid-cols-3 gap-2">
+                    {% for size in sizes %}
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" name="sizes" value="{{ size.id }}"
+                                   class="border-gray-300 focus:ring-gray-900">
+                            <span class="text-sm">{{ size.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <p class="text-xs text-gray-600 mt-1">Если не выбрано, будет создан универсальный размер</p>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-4 pt-4">
+                <button type="submit" 
+                        class="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide">
+                    Создать объявление
+                </button>
+                <button type="button"
+                        hx-get="{% url 'users:profile' %}"
+                        hx-target="#main-content"
+                        hx-push-url="true"
+                        class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -7,44 +7,48 @@ from django.db.models import Q
 
 
 class IndexView(TemplateView):
-    template_name = 'main/base.html'
-
+    template_name = 'main/home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['current_category'] = None
         return context
-    
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/home_content.html', context)
         return TemplateResponse(request, self.template_name, context)
+
     
 
 class CatalogView(TemplateView):
-    template = 'main/base.html'
+    template_name = 'main/base.html'
 
     FILTER_MAPPING = {
         'color': lambda queryset, value: queryset.filter(color__iexact=value),
-        'min_price': lambda queryset, value: queryset.filter(price_gte=value),
-        'max_price': lambda queryset, value: queryset.filter(price_lte=value),
         'size': lambda queryset, value: queryset.filter(product_sizes__size__name=value),
+        'material': lambda queryset, value: queryset.filter(material__icontains=value),
+        'brand': lambda queryset, value: queryset.filter(brand__icontains=value),
+        'condition': lambda queryset, value: queryset.filter(condition=value),
+        'category': lambda queryset, value: queryset.filter(category__slug=value),
     }
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         category_slug = kwargs.get('category_slug')
         categories = Category.objects.all()
+        
         products = Product.objects.all().order_by('-created_at')
+        
         current_category = None
+        current_category_name = None
 
         if category_slug:
             current_category = get_object_or_404(Category, slug=category_slug)
             products = products.filter(category=current_category)
+            current_category_name = current_category.name
 
         query = self.request.GET.get('q')
         if query:
@@ -67,6 +71,7 @@ class CatalogView(TemplateView):
             'categories': categories,
             'products': products,
             'current_category': category_slug,
+            'current_category_name': current_category_name,
             'filter_params': filter_params,
             'sizes': Size.objects.all(),
             'search_query': query or ''
@@ -78,7 +83,6 @@ class CatalogView(TemplateView):
             context['reset_search'] = True
         
         return context
-    
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
@@ -89,7 +93,7 @@ class CatalogView(TemplateView):
                 return TemplateResponse(request, 'main/search_button.html', {})
             template = 'main/filter_modal.html' if request.GET.get('show_filters') == 'true' else 'main/catalog.html'
             return TemplateResponse(request, template, context)
-        return TemplateResponse(request, self.template, context)
+        return TemplateResponse(request, self.template_name, context)
     
 
 class ProductDetailView(DetailView):
@@ -103,9 +107,10 @@ class ProductDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
         context['categories'] = Category.objects.all()
-        context['related_products'] = Product.objects.filter(
-            category=product.category
-        ).exclude(id=product.id)[:4]
+        
+        related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+        
+        context['related_products'] = related_products
         context['current_category'] = product.category.slug
         return context
     

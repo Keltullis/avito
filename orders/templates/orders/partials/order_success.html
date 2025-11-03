@@ -1,0 +1,31 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <div class="mb-6">
+            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Заказ успешно оформлен!</h1>
+        
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-gray-600 mb-2">Номер вашего заказа:</p>
+            <p class="text-2xl font-bold text-gray-900">{{ order.order_code }}</p>
+        </div>
+        
+        <div class="text-left space-y-2 mb-6 text-sm text-gray-700">
+            <p><span class="font-semibold">ФИО:</span> {{ order.first_name }} {{ order.last_name }}</p>
+            <p><span class="font-semibold">Телефон:</span> {{ order.phone }}</p>
+            <p><span class="font-semibold">Группа:</span> {{ order.group_number }}</p>
+            <p><span class="font-semibold">Адрес получения:</span> {{ order.get_delivery_address_display_full }}</p>
+        </div>
+        
+        <p class="text-gray-600 mb-8">
+            Мы свяжемся с вами в ближайшее время для подтверждения заказа.
+        </p>
+        
+        <a href="/" class="inline-block w-full bg-black text-white py-3 px-6 text-sm font-semibold uppercase hover:bg-gray-800 transition-colors duration-200">
+            Вернуться на главную
+        </a>
+    </div>
+</div>

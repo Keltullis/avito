@@ -1,0 +1,105 @@
+{% load static %}
+
+<div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-900">Детали заказа</h2>
+        <button onclick="document.getElementById('order-modal').classList.add('hidden')" 
+                class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="p-6 space-y-6">
+        <!-- Order Info -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Номер заказа</p>
+                    <p class="text-lg font-bold text-gray-900">{{ order.order_code }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Статус</p>
+                    <span class="inline-block px-3 py-1 text-sm font-semibold rounded-full
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                        {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                        {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Дата создания</p>
+                    <p class="font-medium text-gray-900">{{ order.created_at|date:"d.m.Y H:i" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Последнее обновление</p>
+                    <p class="font-medium text-gray-900">{{ order.updated_at|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Info -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация о получателе</h3>
+            <div class="space-y-2">
+                <p class="text-sm"><span class="font-medium">ФИО:</span> {{ order.first_name }} {{ order.last_name }}</p>
+                <p class="text-sm"><span class="font-medium">Телефон:</span> {{ order.phone }}</p>
+                <p class="text-sm"><span class="font-medium">Группа:</span> {{ order.group_number }}</p>
+                <p class="text-sm"><span class="font-medium">Адрес доставки:</span> {{ order.get_delivery_address_display_full }}</p>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Товары в заказе</h3>
+            <div class="space-y-3">
+                {% for item in order.items.all %}
+                    <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" 
+                             class="w-16 h-16 object-cover rounded">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900">{{ item.product.name }}</h4>
+                            <p class="text-sm text-gray-600">Размер: {{ item.size.size.name }}</p>
+                            <p class="text-sm text-gray-600">Количество: {{ item.quantity }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900">{{ item.price }} ₽</p>
+                            <p class="text-sm text-gray-600">Итого: {{ item.get_total_price }} ₽</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Total -->
+        <div class="border-t pt-4">
+            <div class="flex justify-between items-center">
+                <span class="text-lg font-semibold text-gray-900">Общая сумма:</span>
+                <span class="text-2xl font-bold text-gray-900">{{ order.total_price }} ₽</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6">
+        <button onclick="document.getElementById('order-modal').classList.add('hidden')" 
+                class="w-full bg-black text-white py-3 px-6 font-medium hover:bg-gray-800 transition-colors">
+            Закрыть
+        </button>
+    </div>
+</div>
+
+<script>
+    // Close modal when clicking outside
+    document.getElementById('order-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+        }
+    });
+</script>

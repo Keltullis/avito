@@ -1,116 +1,61 @@
 from django import forms
-from django.utils.html import strip_tags
+from .models import Order
 
 
 class OrderForm(forms.Form):
     first_name = forms.CharField(
         max_length=50,
+        required=True,
         widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'First Name'
-        })
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none input-checkout',
+            'placeholder': 'Имя'
+        }),
+        label='Имя'
     )
+    
     last_name = forms.CharField(
         max_length=50,
+        required=True,
         widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Last Name'
-        })
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none input-checkout',
+            'placeholder': 'Фамилия'
+        }),
+        label='Фамилия'
     )
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Email',
-            'readonly': 'readonly'
-        })
-    )
-    company = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Company (optional)'
-        })
-    )
-    address1 = forms.CharField(
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black pr-10',
-            'placeholder': 'Address Line 1'
-        })
-    )
-    address2 = forms.CharField(
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Address Line 2 (optional)'
-        })
-    )
-    city = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'City'
-        })
-    )
-    country = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Country'
-        })
-    )
-    province = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'State/Province'
-        })
-    )
-    postal_code = forms.CharField(
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black',
-            'placeholder': 'Postal Code'
-        })
-    )
+    
     phone = forms.CharField(
         max_length=15,
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 border border-black rounded-none text-black placeholder-gray-500 focus:outline-none focus:border-black pr-10',
-            'placeholder': 'Phone (optional)'
-        })
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none input-checkout',
+            'placeholder': '+7 (___) ___-__-__'
+        }),
+        label='Номер телефона'
+    )
+    
+    delivery_address = forms.ChoiceField(
+        choices=Order.DELIVERY_ADDRESS_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none select-checkout',
+        }),
+        label='Адрес получения'
+    )
+    
+    group_number = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none input-checkout',
+            'placeholder': 'Например: И-207'
+        }),
+        label='Номер группы'
     )
 
-
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        
         if user:
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
-            self.fields['email'].initial = user.email
-            self.fields['company'].initial = user.company
-            self.fields['address1'].initial = user.address1
-            self.fields['address2'].initial = user.address2
-            self.fields['city'].initial = user.city
-            self.fields['country'].initial = user.country
-            self.fields['province'].initial = user.province
-            self.fields['postal_code'].initial = user.postal_code
-            self.fields['phone'].initial = user.phone
-
-
-    def clean(self):
-        cleaned_data = super().clean()
-        for field in ['company', 'address1', 'address2', 'city', 
-                      'country', 'province', 'postal_code', 'phone']:
-            if cleaned_data.get(field):
-                cleaned_data[field] = strip_tags(cleaned_data[field])
-        return cleaned_data
-    

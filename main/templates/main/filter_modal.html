@@ -1,6 +1,6 @@
 <div class="p-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold tracking-tight text-gray-900 uppercase">Filters</h2>
+        <h2 class="text-xl font-bold tracking-tight text-gray-900 uppercase">Фильтры</h2>
         <button class="text-gray-600 hover:text-gray-900"
                 onclick="document.getElementById('filter-modal').classList.add('hidden')">
             ×
@@ -13,37 +13,49 @@
         <input type="hidden" name="q" value="{{ filter_params.q|default:'' }}">
         
         <div class="space-y-6">
+            <!-- Added universal filters for different product types -->
+            
+            <!-- Category -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Категория</h3>
+                <select name="category" class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if filter_params.category == category.slug %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Condition -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Состояние</h3>
+                <select name="condition" class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
+                    <option value="">Любое</option>
+                    <option value="new" {% if filter_params.condition == 'new' %}selected{% endif %}>Новое</option>
+                    <option value="like_new" {% if filter_params.condition == 'like_new' %}selected{% endif %}>Как новое</option>
+                    <option value="good" {% if filter_params.condition == 'good' %}selected{% endif %}>Хорошее</option>
+                    <option value="fair" {% if filter_params.condition == 'fair' %}selected{% endif %}>Удовлетворительное</option>
+                    <option value="poor" {% if filter_params.condition == 'poor' %}selected{% endif %}>Плохое</option>
+                </select>
+            </div>
+
             <!-- Color -->
             <div>
-                <h3 class="text-sm font-medium text-gray-900 mb-3">COLOR</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Цвет</h3>
                 <input type="text" 
                        name="color" 
                        value="{{ filter_params.color|default:'' }}" 
+                       placeholder="Например: черный, белый"
                        class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
-            </div>
-
-            <!-- Price Range -->
-            <div>
-                <h3 class="text-sm font-medium text-gray-900 mb-3">PRICE RANGE</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" 
-                           name="min_price" 
-                           value="{{ filter_params.min_price|default:'' }}" 
-                           placeholder="Min" 
-                           class="border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
-                    <input type="number" 
-                           name="max_price" 
-                           value="{{ filter_params.max_price|default:'' }}" 
-                           placeholder="Max" 
-                           class="border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
-                </div>
             </div>
 
             <!-- Size -->
             <div>
-                <h3 class="text-sm font-medium text-gray-900 mb-3">SIZE</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Размер</h3>
                 <select name="size" class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
-                    <option value="">Any Size</option>
+                    <option value="">Все размеры</option>
                     {% for size in sizes %}
                     <option value="{{ size.name }}" {% if filter_params.size == size.name %}selected{% endif %}>
                         {{ size.name|upper }}
@@ -52,16 +64,36 @@
                 </select>
             </div>
 
+            <!-- Material -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Материал</h3>
+                <input type="text" 
+                       name="material" 
+                       value="{{ filter_params.material|default:'' }}" 
+                       placeholder="Например: хлопок, дерево, металл"
+                       class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
+            </div>
+
+            <!-- Brand -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Бренд</h3>
+                <input type="text" 
+                       name="brand" 
+                       value="{{ filter_params.brand|default:'' }}" 
+                       placeholder="Название бренда"
+                       class="w-full border border-gray-300 py-2 px-3 text-sm uppercase focus:outline-none focus:border-gray-900">
+            </div>
+
             <!-- Form Actions -->
             <div class="flex justify-between">
                 <button type="button" 
                         class="border border-gray-300 py-2 px-4 text-sm font-medium uppercase hover:border-gray-900 transition-colors"
                         onclick="document.getElementById('filter-modal').classList.add('hidden')">
-                    Cancel
+                    Отклонить
                 </button>
                 <button type="submit" 
                         class="bg-black text-white py-2 px-4 text-sm font-medium uppercase hover:bg-gray-800 transition-colors">
-                    Apply Filters
+                    Применить
                 </button>
             </div>
         </div>

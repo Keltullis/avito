@@ -6,10 +6,10 @@ def cart_processor(request):
         request.session.create()
 
     cart, created = Cart.objects.get_or_create(
-        session_key = request.session.session_key
+        session_key=request.session.session_key
     )
 
     return {
         'cart_total_items': cart.total_items,
-        'cart_suntotal': cart.subtotal,
+        'cart_subtotal': 0,
     }

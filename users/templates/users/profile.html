@@ -23,7 +23,7 @@
 <div class="min-h-screen p-8">
     <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center tracking-wide">
-            HI, {{ request.user.first_name|upper }} {{ request.user.last_name|upper }}
+            С возвращением, {{ request.user.first_name }} {{ request.user.last_name }}
         </h1>
         
         {% if messages %}
@@ -45,7 +45,7 @@
                                hx-target="#main-content" 
                                hx-push-url="true"
                                class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900 {% if request.resolver_match.url_name == 'profile' %}text-gray-900 border-l-4 border-gray-500 pl-2{% endif %}">
-                                ACCOUNT
+                                Аккаунт
                             </a>
                         </li>
                         <li class="nav-item">
@@ -54,7 +54,37 @@
                                hx-target="#profile-main-content" 
                                hx-push-url="true"
                                class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900 {% if request.resolver_match.url_name == 'order_history' %}text-gray-900 border-l-4 border-gray-500 pl-2{% endif %}">
-                                ORDER HISTORY
+                                История заказов
+                            </a>
+                        </li>
+                        <!-- Added wishlist menu item -->
+                        <li class="nav-item">
+                            <a href="{% url 'users:wishlist' %}" 
+                               hx-get="{% url 'users:wishlist' %}" 
+                               hx-target="#profile-main-content" 
+                               hx-push-url="true"
+                               class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900 {% if request.resolver_match.url_name == 'wishlist' %}text-gray-900 border-l-4 border-gray-500 pl-2{% endif %}">
+                                Список желаний
+                            </a>
+                        </li>
+                        <!-- Added create listing menu item -->
+                        <li class="nav-item">
+                            <a href="{% url 'users:create_listing' %}" 
+                               hx-get="{% url 'users:create_listing' %}" 
+                               hx-target="#profile-main-content" 
+                               hx-push-url="true"
+                               class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900 {% if request.resolver_match.url_name == 'create_listing' %}text-gray-900 border-l-4 border-gray-500 pl-2{% endif %}">
+                                Создать объявление
+                            </a>
+                        </li>
+                        <!-- Added my listings menu item -->
+                        <li class="nav-item">
+                            <a href="{% url 'users:my_listings' %}" 
+                               hx-get="{% url 'users:my_listings' %}" 
+                               hx-target="#profile-main-content" 
+                               hx-push-url="true"
+                               class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900 {% if request.resolver_match.url_name == 'my_listings' %}text-gray-900 border-l-4 border-gray-500 pl-2{% endif %}">
+                                Мои объявления
                             </a>
                         </li>
                         <li class="nav-item">
@@ -63,7 +93,7 @@
                                hx-target="#main-content" 
                                hx-push-url="true"
                                class="flex items-center text-gray-700 font-semibold text-sm tracking-wide hover:text-gray-900">
-                                LOG OUT
+                                Выйти
                             </a>
                         </li>
                     </ul>
@@ -73,48 +103,34 @@
             <!-- Main Content -->
             <div class="col-span-3" id="profile-main-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Latest Order -->
+                    <!-- Replaced Latest Order block with Create Listing block -->
                     <div class="bg-white p-6 rounded-lg shadow-lg card">
                         <h2 class="text-xl font-semibold text-gray-900 mb-4 tracking-wide">
-                            LATEST ORDER
+                            Создать объявление
                         </h2>
-                        {% if latest_order %}
-                            <p class="text-sm text-gray-700">Order #{{ latest_order.id }}</p>
-                            <p class="text-sm text-gray-700">Placed on: {{ latest_order.created_at|date:"F d, Y" }}</p>
-                            <p class="text-sm text-gray-700">Status: {{ latest_order.get_status_display }}</p>
-                            <p class="text-sm text-gray-700">Total: €{{ latest_order.total_price|floatformat:2 }}</p>
-                            <button 
-                                hx-get="{% url 'users:order_detail' latest_order.id %}" 
-                                hx-target="#profile-main-content" 
-                                hx-push-url="true"
-                                class="mt-4 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
-                            >
-                                VIEW
-                            </button>
-                        {% else %}
-                            <p class="text-sm text-gray-700">You haven't placed any orders yet.</p>
-                            <button 
-                                href="{% url 'main:index' %}" 
-                                hx-get="{% url 'main:index' %}" 
-                                hx-target="#main-content" 
-                                hx-push-url="true"
-                                class="mt-4 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
-                            >
-                                SHOP NOW
-                            </button>
-                        {% endif %}
+                        <p class="text-sm text-gray-700 mb-4">
+                            Разместите свой товар и начните продавать прямо сейчас!
+                        </p>
+                        <button 
+                            hx-get="{% url 'users:create_listing' %}" 
+                            hx-target="#profile-main-content" 
+                            hx-push-url="true"
+                            class="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
+                        >
+                            Создать объявление
+                        </button>
                     </div>
                     
                     <!-- Account Details -->
                     <div class="bg-white p-6 rounded-lg shadow-lg card" id="account-details-content">
                         <h2 class="text-xl font-semibold text-gray-900 mb-4 tracking-wide">
-                            ACCOUNT DETAILS
+                            Детали профиля
                         </h2>
                         <div class="space-y-2">
                             <p class="text-sm text-gray-700">Default Address</p>
                             <p class="text-sm text-gray-700">{{ request.user.first_name }} {{ request.user.last_name }}</p>
                             <p class="text-sm text-gray-700">{{ request.user.address1|default:"" }} {{ request.user.address2|default:"" }}</p>
-                            <p class="text-sm text-gray-700">{{ request.user.city|default:"" }}, {{ request.user.country|default:"Not specified" }}</p>
+                            <p class="text-sm text-gray-700">{{ request.user.city|default:"" }}{{ request.user.country|default:"Not specified" }}</p>
                         </div>
                         <div class="mt-4 flex gap-4">
                             <button 
@@ -123,12 +139,12 @@
                                 hx-swap="innerHTML"
                                 class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
                             >
-                                Edit
+                                Изменить
                             </button>
                             <button 
                                 class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
                             >
-                                Delete
+                                Удалить
                             </button>
                         </div>
                     </div>
@@ -137,7 +153,7 @@
                 <!-- Order History -->
                 <div class="mt-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4 tracking-wide">
-                        ORDER HISTORY
+                        История заказов
                     </h2>
                     {% include 'users/partials/order_history.html' %}
                 </div>
@@ -145,7 +161,7 @@
                 <!-- Recommendations -->
                 <div class="mt-8">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4 tracking-wide">
-                        YOU MAY ALSO LIKE
+                        Вам может подойти:
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {% for product in recommended_products %}
@@ -158,7 +174,7 @@
                                     {% endif %}
                                 </div>
                                 <h3 class="text-sm font-semibold text-gray-900">{{ product.name }}</h3>
-                                <p class="text-sm text-gray-700">€{{ product.price }}</p>
+                    
                                 <a 
                                     href="{% url 'main:product_detail' product.slug %}" 
                                     hx-get="{% url 'main:product_detail' product.slug %}" 
@@ -166,11 +182,11 @@
                                     hx-push-url="true"
                                     class="mt-2 inline-block bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
                                 >
-                                    CHOOSE OPTIONS
+                                    Выбрать
                                 </a>
                             </div>
                         {% empty %}
-                            <p class="text-sm text-gray-700">No recommended products available at the moment.</p>
+                            <p class="text-sm text-gray-700">На данный момент для вас нет рекомендаций.</p>
                         {% endfor %}
                     </div>
                 </div>
@@ -180,6 +196,26 @@
 </div>
 
 <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Add CSRF token to all HTMX requests
+    document.body.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['X-CSRFToken'] = getCookie('csrftoken');
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         const navItems = document.querySelectorAll('.nav-item a');
         navItems.forEach(item => {

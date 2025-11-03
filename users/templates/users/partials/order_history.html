@@ -1,0 +1,65 @@
+{% load static %}
+
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4 tracking-wide">
+        Последние заказы
+    </h2>
+    
+    {% if orders %}
+        <div class="space-y-3">
+            {% for order in orders|slice:":3" %}
+                <div class="border-b border-gray-200 pb-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                     hx-get="{% url 'users:order_detail' order.id %}"
+                     hx-target="#order-modal"
+                     hx-swap="innerHTML"
+                     onclick="document.getElementById('order-modal').classList.remove('hidden')">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">Заказ #{{ order.order_code }}</p>
+                            <p class="text-xs text-gray-600">{{ order.created_at|date:"d.m.Y" }}</p>
+                            <span class="inline-block mt-1 px-2 py-1 text-xs font-semibold rounded-full
+                                {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                                {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                                {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                                {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                        <!-- Removed price display -->
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <a href="{% url 'users:order_history' %}" 
+           hx-get="{% url 'users:order_history' %}" 
+           hx-target="#profile-main-content" 
+           hx-push-url="true"
+           class="mt-4 inline-block text-sm text-gray-700 hover:text-gray-900 font-semibold">
+            Посмотреть все заказы →
+        </a>
+    {% else %}
+        <p class="text-sm text-gray-700">У вас ещё не было заказов.</p>
+    {% endif %}
+</div>
+
+<!-- Fixed modal styling and added close functionality -->
+<div id="order-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <!-- Modal content will be loaded here -->
+</div>
+
+<script>
+function closeOrderModal() {
+    document.getElementById('order-modal').classList.add('hidden');
+    document.getElementById('order-modal').innerHTML = '';
+}
+
+// Close modal when clicking outside
+document.getElementById('order-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeOrderModal();
+    }
+});
+</script>

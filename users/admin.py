@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, Wishlist
 
 
 class CustomUserAdmin(UserAdmin):
@@ -39,6 +39,15 @@ class CustomUserAdmin(UserAdmin):
             form.base_fields['username'].disabled = True
 
         return form
-    
+
+
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'added_at')
+    list_filter = ('added_at',)
+    search_fields = ('user__email', 'product__name')
+    ordering = ('-added_at',)
+    raw_id_fields = ('user', 'product')
+
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Wishlist, WishlistAdmin)

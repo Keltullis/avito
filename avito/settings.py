@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'main',
     'cart',
     'users',
@@ -146,5 +146,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE = 86400 # хранение 30 дней
 SESSION_SAVE_EVERY_REQUEST = True
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
 
 AUTH_USER_MODEL = 'users.CustomUser'

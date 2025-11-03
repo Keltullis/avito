@@ -11,6 +11,7 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        return user
     
 
     def create_superuser(self, email, first_name, last_name, password=None, **extra_fields):
@@ -27,7 +28,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, max_length=254)
-    fist_name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     company = models.CharField(max_length=100, blank=True, null=True)
     address1 = models.CharField(max_length=255, blank=True, null=True)
@@ -55,3 +56,15 @@ class CustomUser(AbstractUser):
             if value:
                 setattr(self, field, strip_tags(value))
 
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='wishlist_items')
+    product = models.ForeignKey('main.Product', on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name}"

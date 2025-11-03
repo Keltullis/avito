@@ -3,10 +3,10 @@
     <!-- Breadcrumb and Filters -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-12 space-y-4 sm:space-y-0">
         <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 uppercase">
-            {% if current_category %}
-                {{ current_category|upper }} > NEW ARRIVALS
+            {% if current_category_name %}
+                {{ current_category_name|upper }} > Новинки
             {% else %}
-                ALL PRODUCTS
+                Список вещей
             {% endif %}
         </h2>
         <button class="bg-black text-white px-4 py-2 text-sm font-medium uppercase hover:bg-gray-800 transition-colors w-full sm:w-auto" 
@@ -14,7 +14,7 @@
                 hx-target="#filter-modal-content"
                 hx-swap="innerHTML"
                 hx-on::after-request="document.getElementById('filter-modal').classList.remove('hidden')">
-            FILTERS
+            Фильтры
         </button>
     </div>
 
@@ -45,7 +45,6 @@
             <div class="text-center">
                 <h3 class="text-sm font-medium text-gray-900 mb-1 uppercase">{{ product.name }}</h3>
                 <p class="text-sm text-gray-600 mb-1 uppercase">{{ product.color }}</p>
-                <p class="text-sm font-medium">${{ product.price }}</p>
             </div>
         </div>
         {% endfor %}

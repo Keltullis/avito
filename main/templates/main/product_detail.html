@@ -6,7 +6,7 @@
                hx-get="{% url 'main:index' %}" 
                hx-target="#main-content" 
                hx-push-url="true"
-               class="hover:text-gray-900">HOME</a>
+               class="hover:text-gray-900">ГЛАВНАЯ</a>
             <span class="mx-2">/</span>
             <a href="{% url 'main:catalog' product.category.slug %}" 
                hx-get="{% url 'main:catalog' product.category.slug %}" 
@@ -56,13 +56,12 @@
                     {{ product.name|upper }}
                 </h1>
                 <p class="text-lg text-gray-600 mb-4">{{ product.color|upper }}</p>
-                <p class="text-2xl font-bold text-gray-900">${{ product.price }}</p>
             </div>
 
             <!-- Sizes -->
             {% if product.product_sizes.all %}
             <div>
-                <h3 class="text-sm font-medium text-gray-900 mb-3">SIZE</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Размеры</h3>
                 <div class="grid grid-cols-4 gap-2">
                     {% for product_size in product.product_sizes.all %}
                     <div class="size-option">
@@ -84,7 +83,7 @@
             </div>
             {% else %}
             <div>
-                <h3 class="text-sm font-medium text-gray-900 mb-3">SIZE</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Размеры</h3>
                 <p class="text-sm text-gray-600">No sizes available</p>
             </div>
             {% endif %}
@@ -95,30 +94,34 @@
                         class="w-full bg-black text-white py-3 px-6 text-sm font-medium hover:bg-gray-800 transition-colors"
                         onclick="addToCart()"
                         {% if not product.product_sizes.all %}disabled{% endif %}>
-                    ADD TO CART
+                    Добавить в корзину
                 </button>
                 
-                <button class="w-full border border-gray-300 py-3 px-6 text-sm font-medium hover:border-gray-900 transition-colors">
-                    ADD TO WISHLIST
+                <!-- Updated wishlist button to work with backend -->
+                <button id="add-to-wishlist-btn"
+                        class="w-full border border-gray-300 py-3 px-6 text-sm font-medium hover:border-gray-900 transition-colors"
+                        onclick="addToWishlist()">
+                    Добавить в список желаемого
                 </button>
             </div>
 
             <!-- Product Details -->
             <div class="border-t border-gray-200 pt-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-3">DETAILS</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Описание</h3>
                 <div class="prose prose-sm text-gray-600">
                     <p>{{ product.description|linebreaks }}</p>
-                    <p>Created: {{ product.created_at|date:"F d, Y" }}</p>
+                    <p>Создано: {{ product.created_at|date:"F d, Y" }}</p>
                 </div>
             </div>
 
             <!-- Care Instructions -->
             <div class="border-t border-gray-200 pt-6">
-                <h3 class="text-sm font-medium text-gray-900 mb-3">CARE</h3>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">ИНФОРМАЦИЯ</h3>
                 <div class="prose prose-sm text-gray-600">
-                    <p>Professional dry clean only</p>
-                    <p>Do not bleach</p>
-                    <p>Iron at low temperature</p>
+                    <p>• Состояние: идеальное</p>
+                    <p>• Полностью исправно</p>
+                    <p>• Готово к использованию</p>
+                    <p>• Что-то подобное тут будет написано...</p>
                 </div>
             </div>
         </div>
@@ -127,7 +130,7 @@
     <!-- Related Products -->
     {% if related_products %}
     <div class="mt-16 border-t border-gray-200 pt-16">
-        <h2 class="text-xl font-bold tracking-tight text-gray-900 mb-8">YOU MAY ALSO LIKE</h2>
+        <h2 class="text-xl font-bold tracking-tight text-gray-900 mb-8">Вам может подойти:</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for related_product in related_products %}
             <div class="product-card group cursor-pointer" 
@@ -148,7 +151,6 @@
                 <div class="text-center">
                     <h3 class="text-sm font-medium text-gray-900 mb-1">{{ related_product.name|upper }}</h3>
                     <p class="text-sm text-gray-600 mb-1">{{ related_product.color|upper }}</p>
-                    <p class="text-sm font-medium">${{ related_product.price }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -198,7 +200,6 @@
         const productSlug = '{{ product.slug }}';
         console.log('Product Slug:', productSlug);
         
-        // Update selected size before sending
         updateSelectedSize();
         console.log('Selected Size ID:', selectedSizeId);
 
@@ -240,6 +241,42 @@
         });
     }
     
+    function addToWishlist() {
+        const productSlug = '{{ product.slug }}';
+        const btn = document.getElementById('add-to-wishlist-btn');
+        
+        {% if user.is_authenticated %}
+            fetch(`{% url 'users:add_to_wishlist' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productSlug), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message);
+                    btn.textContent = 'В списке желаний ✓';
+                    btn.classList.add('bg-black', 'text-white');
+                    btn.classList.remove('border-gray-300');
+                    btn.disabled = true;
+                } else {
+                    showNotification(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Ошибка при добавлении в список желаний');
+            });
+        {% else %}
+            showNotification('Пожалуйста, войдите в систему');
+            setTimeout(() => {
+                window.location.href = '{% url "users:login" %}';
+            }, 1500);
+        {% endif %}
+    }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -295,7 +332,6 @@
             return;
         }
 
-        // Ensure at least one valid radio is checked
         let checkedRadio = Array.from(sizeRadios).find(radio => radio.checked && !radio.disabled);
         if (!checkedRadio && availableRadios.length > 0) {
             availableRadios[0].checked = true;
@@ -303,10 +339,8 @@
             console.log('Auto-checked first available radio:', checkedRadio.dataset.size, 'ID:', checkedRadio.value);
         }
 
-        // Update selected size
         updateSelectedSize();
 
-        // Add event listeners
         sizeRadios.forEach(radio => {
             radio.addEventListener('change', function(e) {
                 if (this.disabled) {

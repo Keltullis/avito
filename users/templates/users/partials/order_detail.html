@@ -1,0 +1,82 @@
+<!-- Added white background and improved styling -->
+<div class="bg-white rounded-lg max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
+    <div class="p-8">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Заказ #{{ order.order_code }}</h2>
+                <p class="text-sm text-gray-600">Создан: {{ order.created_at|date:"d.m.Y в H:i" }}</p>
+            </div>
+            <button onclick="closeOrderModal()" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">
+                ×
+            </button>
+        </div>
+        
+        <!-- Status -->
+        <div class="mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-600 mb-2">Статус заказа:</p>
+                <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold
+                    {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                    {% elif order.status == 'shipped' %}bg-purple-100 text-purple-800
+                    {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                    {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                    {% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Customer Information -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация о получателе</h3>
+            <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+                <p><span class="font-medium text-gray-700">ФИО:</span> <span class="text-gray-900">{{ order.first_name }} {{ order.last_name }}</span></p>
+                <p><span class="font-medium text-gray-700">Телефон:</span> <span class="text-gray-900">{{ order.phone }}</span></p>
+                <p><span class="font-medium text-gray-700">Группа:</span> <span class="text-gray-900">{{ order.group_number }}</span></p>
+                <p><span class="font-medium text-gray-700">Адрес получения:</span> <span class="text-gray-900">{{ order.get_delivery_address_display_full }}</span></p>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Товары в заказе</h3>
+            <div class="space-y-4">
+                {% for item in order.items.all %}
+                    <div class="flex gap-4 bg-gray-50 p-4 rounded-lg">
+                        <div class="w-20 h-20 flex-shrink-0 bg-white rounded">
+                            {% if item.product.main_image %}
+                                <img src="{{ item.product.main_image.url }}" 
+                                     alt="{{ item.product.name }}" 
+                                     class="w-full h-full object-contain">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="text-gray-400 text-xs">No Image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-sm text-gray-900">{{ item.product.name }}</h4>
+                            <p class="text-xs text-gray-600 mt-1">Цвет: {{ item.product.color }}</p>
+                            <p class="text-xs text-gray-600">Размер: {{ item.size.size.name }}</p>
+                            <p class="text-xs text-gray-600">Количество: {{ item.quantity }}</p>
+                        </div>
+                        
+                        <!-- Removed price display -->
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Removed total price section -->
+        
+        <!-- Close Button -->
+        <div class="mt-6">
+            <button onclick="closeOrderModal()" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 text-sm tracking-wide uppercase">
+                Закрыть
+            </button>
+        </div>
+    </div>
+</div>

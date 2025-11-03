@@ -1,13 +1,18 @@
-<div class="border-t border-gray-200 pt-4">
-    <div class="flex justify-between text-sm font-medium mb-4">
-        <span>SUBTOTAL:</span>
-        <span>${{ cart.subtotal|floatformat:2 }}</span>
+<div class="space-y-4">
+    <div class="flex justify-between text-sm">
+        <span class="text-gray-600">Товаров:</span>
+        <span class="font-semibold">{{ cart.total_items }}</span>
     </div>
-    <a href="{% url 'orders:checkout' %}" 
-       hx-get="{% url 'orders:checkout' %}" 
-       hx-target="#main-content" 
-       hx-push-url="true"
-       class="w-full block bg-black text-white py-3 px-6 text-sm font-medium text-center uppercase hover:bg-gray-800 transition-colors">
-        Checkout
-    </a>
-</div>  
+    
+    <div class="border-t pt-4">
+        <a href="{% url 'orders:checkout' %}" 
+           class="block w-full bg-black text-white text-center py-4 px-6 text-sm font-semibold uppercase hover:bg-gray-800 transition-colors duration-200">
+            Заказать
+        </a>
+    </div>
+    
+    <button onclick="closeCart()" 
+            class="w-full border border-gray-300 text-gray-700 py-3 px-6 text-sm font-semibold uppercase hover:bg-gray-50 transition-colors duration-200">
+        Продолжить покупки
+    </button>
+</div>
