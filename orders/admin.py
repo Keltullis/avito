@@ -22,7 +22,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('order_code', 'user', 'full_name', 'group_number',
                     'status', 'created_at')
     list_filter = ('status', 'delivery_address', 'created_at')
-    search_fields = ('order_code', 'first_name', 'last_name', 'phone', 'group_number')
+    search_fields = ('order_code', 'first_name', 'last_name', 'patronymic', 'phone', 'group_number')
     date_hierarchy = 'created_at'
     readonly_fields = ('order_code', 'created_at', 'updated_at')
     inlines = [OrderItemInline]
@@ -32,7 +32,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('order_code', 'user', 'status')
         }),
         ('Данные получателя', {
-            'fields': ('first_name', 'last_name', 'phone', 'group_number', 
+            'fields': ('first_name', 'last_name', 'patronymic', 'phone', 'group_number', 
                        'delivery_address')
         }),
         ('Временные метки', {
@@ -47,6 +47,6 @@ class OrderAdmin(admin.ModelAdmin):
     
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return self.readonly_fields + ('user', 'first_name', 'last_name', 
+            return self.readonly_fields + ('user', 'first_name', 'last_name', 'patronymic',
                                             'phone', 'group_number', 'delivery_address')
         return self.readonly_fields

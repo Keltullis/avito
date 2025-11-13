@@ -59,6 +59,7 @@ class CheckoutView(CartMixin, View):
                 user=request.user,
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],
+                patronymic=form.cleaned_data.get('patronymic', ''),
                 phone=form.cleaned_data['phone'],
                 delivery_address=form.cleaned_data['delivery_address'],
                 group_number=form.cleaned_data['group_number'],

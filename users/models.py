@@ -39,7 +39,8 @@ class CustomUser(AbstractUser):
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     phone = models.CharField(max_length=150, unique=True, null=True, blank=True)
 
-    username = CustomUserManager()
+    objects = CustomUserManager()
+    username = None  # We don't use username field
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']

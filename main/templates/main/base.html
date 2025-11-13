@@ -116,9 +116,15 @@
     <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-80 h-full bg-white z-50 md:hidden shadow-lg">
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-lg font-bold tracking-tight text-left">
-                    Swaply
-                </h2>
+                <div class="flex items-center gap-2">
+                    <!-- ЛОГОТИП В МОБИЛЬНОМ МЕНЮ - РАЗМЕР МЕНЯТЬ ЗДЕСЬ -->
+                    <!-- Текущие классы: w-10 h-10 (40px x 40px на всех экранах) -->
+                    <!-- Варианты размеров: w-8 h-8 (32px), w-10 h-10 (40px), w-12 h-12 (48px), w-14 h-14 (56px), w-16 h-16 (64px) -->
+                    <img src="{% static 'img/logo.png' %}" alt="Swaply logo" class="w-10 h-10">
+                    <h2 class="text-lg font-bold tracking-tight text-left">
+                        Swaply
+                    </h2>
+                </div>
                 <button id="closeMenu" class="hamburger active">
                     <span></span>
                     <span></span>
@@ -134,7 +140,10 @@
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    Главная
                 </a>
-                <a href="#" 
+                <a href="{% url 'main:about' %}" 
+                   hx-get="{% url 'main:about' %}" 
+                   hx-target="#main-content" 
+                   hx-push-url="true"
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    О нас
                 </a>
@@ -142,7 +151,10 @@
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    Связаться с нами
                 </a>
-                <a href="#" 
+                <a href="{% url 'main:blog' %}" 
+                   hx-get="{% url 'main:blog' %}" 
+                   hx-target="#main-content" 
+                   hx-push-url="true"
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    Блог
                 </a>
@@ -186,7 +198,14 @@
                     <a href="{% url 'main:index' %}" 
                        hx-get="{% url 'main:index' %}" 
                        hx-target="#main-content" 
-                       hx-push-url="true">
+                       hx-push-url="true"
+                       class="flex items-center gap-2 md:gap-3">
+                        <!-- ЛОГОТИП В ОСНОВНОМ HEADER - РАЗМЕР МЕНЯТЬ ЗДЕСЬ -->
+                        <!-- Текущие классы: w-12 h-12 md:w-16 md:h-16 -->
+                        <!-- w-12 h-12 = 48px на мобилках -->
+                        <!-- md:w-16 md:h-16 = 64px на планшетах и больше (экран > 768px) -->
+                        <!-- Варианты: w-8, w-10, w-12, w-14, w-16, w-20 (20=80px), w-24 (24=96px) -->
+                        <!-- <img src="{% static 'img/logo.png' %}" alt="Swaply logo" class="w-12 h-12 md:w-16 md:h-16"> -->
                         <h1 class="text-2xl sm:text-3xl font-bold text-black">
                             Swaply
                         </h1>
@@ -214,7 +233,10 @@
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        Главная
                     </a>
-                    <a href="#" 
+                    <a href="{% url 'main:about' %}" 
+                       hx-get="{% url 'main:about' %}" 
+                       hx-target="#main-content" 
+                       hx-push-url="true"
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        О нас
                     </a>
@@ -222,14 +244,38 @@
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        Связаться с нами
                     </a>
-                    <a href="#" 
+                    <a href="{% url 'main:blog' %}" 
+                       hx-get="{% url 'main:blog' %}" 
+                       hx-target="#main-content" 
+                       hx-push-url="true"
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        Блог
+                    </a>
+                    <!-- Added Chats link to desktop navigation -->
+                    <a href="{% url 'chats:chat_list' %}" 
+                       hx-get="{% url 'chats:chat_list' %}" 
+                       hx-target="#main-content" 
+                       hx-push-url="true"
+                       class="nav-link text-base font-normal text-gray-600 hover:text-black relative">
+                       Чаты
+                       <span id="chat-badge" class="hidden absolute -top-1 -right-3 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
                     </a>
                 </nav>
                 
                 <!-- Right side icons -->
                 <div class="flex items-center space-x-4 sm:space-x-6">
+                    <!-- Added chat icon for mobile devices -->
+                    <a href="{% url 'chats:chat_list' %}"
+                       hx-get="{% url 'chats:chat_list' %}"
+                       hx-target="#main-content"
+                       hx-push-url="true"
+                       class="md:hidden text-gray-700 hover:text-black relative">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span id="chat-badge-mobile" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
+                    </a>
+                    
                     <!-- Wishlist Icon - show on all devices -->
                     <a href="#" class="text-gray-700 hover:text-black">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -451,6 +497,41 @@
                 if (e.detail && e.detail.total_items !== undefined) {
                     updateHeaderCartCount(e.detail.total_items);
                 }
+            });
+            
+            function updateChatUnreadCount() {
+                fetch('{% url "chats:unread_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('chat-badge');
+                        const badgeMobile = document.getElementById('chat-badge-mobile');
+                        
+                        if (data.unread_count > 0) {
+                            if (badge) {
+                                badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                                badge.classList.remove('hidden');
+                            }
+                            if (badgeMobile) {
+                                badgeMobile.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                                badgeMobile.classList.remove('hidden');
+                            }
+                        } else {
+                            if (badge) badge.classList.add('hidden');
+                            if (badgeMobile) badgeMobile.classList.add('hidden');
+                        }
+                    })
+                    .catch(error => console.log('[v0] Chat unread count error:', error));
+            }
+            
+            // Update chat count on page load
+            updateChatUnreadCount();
+            
+            // Update chat count every 30 seconds
+            setInterval(updateChatUnreadCount, 30000);
+            
+            // Update chat count after HTMX navigation
+            document.addEventListener('htmx:afterSettle', function() {
+                updateChatUnreadCount();
             });
         });
         

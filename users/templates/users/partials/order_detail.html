@@ -32,7 +32,7 @@
         <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация о получателе</h3>
             <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
-                <p><span class="font-medium text-gray-700">ФИО:</span> <span class="text-gray-900">{{ order.first_name }} {{ order.last_name }}</span></p>
+                <p><span class="font-medium text-gray-700">ФИО:</span> <span class="text-gray-900">{{ order.last_name }} {{ order.first_name }}{% if order.patronymic %} {{ order.patronymic }}{% endif %}</span></p>
                 <p><span class="font-medium text-gray-700">Телефон:</span> <span class="text-gray-900">{{ order.phone }}</span></p>
                 <p><span class="font-medium text-gray-700">Группа:</span> <span class="text-gray-900">{{ order.group_number }}</span></p>
                 <p><span class="font-medium text-gray-700">Адрес получения:</span> <span class="text-gray-900">{{ order.get_delivery_address_display_full }}</span></p>

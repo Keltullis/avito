@@ -1,10 +1,11 @@
 <div class="bg-white p-6 rounded-lg shadow-lg">
     <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-wide">Создать объявление</h2>
     
+    <!-- Changed from window.location.href to htmx.ajax() to load my_listings partial into #profile-main-content -->
     <form method="post" enctype="multipart/form-data" 
           hx-post="{% url 'users:create_listing' %}"
-          hx-target="#profile-main-content"
-          hx-swap="innerHTML">
+          hx-encoding="multipart/form-data"
+          hx-on::after-request="if(event.detail.successful) htmx.ajax('GET', '{% url 'users:my_listings' %}', {target: '#profile-main-content', swap: 'innerHTML', pushUrl: true})">
         {% csrf_token %}
         
         <div class="space-y-4">

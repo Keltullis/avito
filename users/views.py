@@ -181,7 +181,6 @@ def check_wishlist_status(request, product_slug):
     return JsonResponse({'in_wishlist': in_wishlist})
 
 
-
 @login_required
 def create_listing_view(request):
     """Display create listing form"""
@@ -216,7 +215,7 @@ def create_listing_view(request):
             
             messages.success(request, 'Объявление успешно создано!')
             if request.headers.get('HX-Request'):
-                return HttpResponse(headers={'HX-Redirect': reverse('users:my_listings')})
+                return HttpResponse(status=200)
             return redirect('users:my_listings')
     else:
         form = ProductForm()
@@ -248,7 +247,12 @@ def delete_listing(request, product_id):
         messages.success(request, 'Объявление удалено')
         
         if request.headers.get('HX-Request'):
-            return HttpResponse(headers={'HX-Redirect': reverse('users:my_listings')})
+            active_listings = Product.objects.filter(owner=request.user, is_active=True).order_by('-created_at')
+            inactive_listings = Product.objects.filter(owner=request.user, is_active=False).order_by('-created_at')
+            return TemplateResponse(request, 'users/partials/my_listings.html', {
+                'active_listings': active_listings,
+                'inactive_listings': inactive_listings
+            })
         return redirect('users:my_listings')
     
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
@@ -266,7 +270,12 @@ def toggle_listing_status(request, product_id):
         messages.success(request, f'Объявление {status}')
         
         if request.headers.get('HX-Request'):
-            return HttpResponse(headers={'HX-Redirect': reverse('users:my_listings')})
+            active_listings = Product.objects.filter(owner=request.user, is_active=True).order_by('-created_at')
+            inactive_listings = Product.objects.filter(owner=request.user, is_active=False).order_by('-created_at')
+            return TemplateResponse(request, 'users/partials/my_listings.html', {
+                'active_listings': active_listings,
+                'inactive_listings': inactive_listings
+            })
         return redirect('users:my_listings')
     
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)

@@ -17,8 +17,9 @@
                         <div class="flex-1">
                             <p class="font-semibold text-base text-gray-900">Заказ #{{ order.order_code }}</p>
                             <p class="text-sm text-gray-600 mt-1">{{ order.created_at|date:"d.m.Y в H:i" }}</p>
+                            <!-- Fixed patronymic order - now Фамилия Имя Отчество -->
                             <p class="text-sm text-gray-700 mt-2">
-                                <span class="font-medium">Получатель:</span> {{ order.first_name }} {{ order.last_name }}
+                                <span class="font-medium">Получатель:</span> {{ order.last_name }} {{ order.first_name }}{% if order.patronymic %} {{ order.patronymic }}{% endif %}
                             </p>
                             <p class="text-sm text-gray-700">
                                 <span class="font-medium">Группа:</span> {{ order.group_number }}

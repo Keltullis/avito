@@ -1,31 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ успешно оформлен</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<style>
+.card-container {
+    position: relative;
+    min-height: 400px;
+}
+
+.truck-animation-container {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding: 0 2rem;
+}
+
+.truck-animation-container:before {
+    content: "";
+    position: absolute;
+    left: 2rem;
+    right: 2rem;
+    bottom: 35px;
+    width: calc(100% - 4rem);
+    height: 3px;
+    background: #9CA3AF;
+    z-index: 0;
+}
+
+.truck-animation-container:after {
+    content: "";
+    position: absolute;
+    left: 2rem;
+    bottom: 35px;
+    width: 0%;
+    height: 3px;
+    background: #6B7280;
+    z-index: 1;
+}
+
+.truck {
+    position: absolute;
+    width: 72px;
+    height: 28px;
+    left: 2rem;
+    bottom: 41px;
+    z-index: 2;
+    transform: translateX(var(--truck-x, 4px));
+}
+
+.truck:before,
+.truck:after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: inset 0 0 0 2px #2B3044, inset 0 0 0 4px #646B8C;
+    background: #fff;
+}
+
+.truck:after {
+    left: 54px;
+}
+
+.truck .wheel,
+.truck .wheel:before {
+    position: absolute;
+    bottom: -6px;
+    left: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2B3044;
+}
+
+.truck .wheel:before {
+    content: "";
+    left: 35px;
+    bottom: 0;
+}
+
+.truck .back {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 47px;
+    height: 28px;
+    border-radius: 1px 1px 0 0;
+    background: linear-gradient(68deg, #362A89 0%, #362A89 22%, #2D246B 22.1%, #2D246B 100%);
+}
+
+.truck .back:before {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    border-radius: 0 1px 0 0;
+    background: #6D58FF;
+}
+
+.truck .back:after {
+    content: "";
+    position: absolute;
+    border-radius: 1px;
+    width: 73px;
+    height: 2px;
+    left: -1px;
+    bottom: -2px;
+    background: #0D0F18;
+}
+
+.truck .front {
+    position: absolute;
+    left: 47px;
+    bottom: -1px;
+    height: 22px;
+    width: 24px;
+    clip-path: polygon(55% 0, 72% 44%, 100% 58%, 100% 100%, 0 100%, 0 0);
+    background: linear-gradient(84deg, #535A79 0%, #535A79 10%, #A6ACCD 12%, #A6ACCD 100%);
+}
+
+.truck .front:before {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 8px;
+    left: 7px;
+    top: 2px;
+    clip-path: polygon(0 0, 60% 0%, 100% 100%, 0% 100%);
+    background: linear-gradient(59deg, #2B3044 0%, #2B3044 57%, #404660 55%, #404660 100%);
+}
+
+.truck .front:after {
+    content: "";
+    position: absolute;
+    width: 3px;
+    height: 2px;
+    right: 0;
+    bottom: 3px;
+    background: #FFF8B1;
+}
+
+.truck .box {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    right: 56px;
+    bottom: 0;
+    z-index: 0;
+    border-radius: 1px;
+    background: linear-gradient(68deg, #DCB97A 0%, #DCB97A 50%, #B89B66 50.2%, #B89B66 100%);
+    background-size: 250% 100%;
+    background-position-x: calc(var(--bx, 0) * 1%);
+    transform: translate(calc(var(--box-x, -24) * 1px), calc(var(--box-y, -6) * 1px)) scale(var(--box-s, 0.5));
+    opacity: var(--box-o, 0);
+    overflow: hidden;
+}
+
+.truck .box:before {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.2);
+    left: 0;
+    right: 0;
+    top: 6px;
+    height: 1px;
+}
+
+.truck .box:after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    left: 100%;
+    top: 0;
+    bottom: 0;
+    background: #6D58FF;
+    transform: translateX(calc(var(--hx, 0) * 1px));
+}
+
+.success-icon {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.order-details {
+    opacity: 0;
+}
+</style>
+
 <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-        <div class="mb-6">
+    <div class="card-container max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <div class="truck-animation-container">
+            <div class="truck">
+                <div class="wheel"></div>
+                <div class="back"></div>
+                <div class="front"></div>
+                <div class="box"></div>
+            </div>
+        </div>
+        
+        <div class="mb-6 success-icon">
             <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         </div>
         
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Заказ успешно оформлен!</h1>
-        
-        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <p class="text-sm text-gray-600 mb-2">Номер вашего заказа:</p>
-            <p class="text-2xl font-bold text-gray-900">{{ order.order_code }}</p>
+        <div class="order-details">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Заказ успешно оформлен!</h1>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <p class="text-sm text-gray-600 mb-2">Номер вашего заказа:</p>
+                <p class="text-2xl font-bold text-gray-900">{{ order.order_code }}</p>
+            </div>
+            
+            <div class="text-left space-y-2 mb-6 text-sm text-gray-700">
+                <p><span class="font-semibold">ФИО:</span> {{ order.last_name }} {{ order.first_name }}{% if order.patronymic %} {{ order.patronymic }}{% endif %}</p>
+                <p><span class="font-semibold">Телефон:</span> {{ order.phone }}</p>
+                <p><span class="font-semibold">Группа:</span> {{ order.group_number }}</p>
+                <p><span class="font-semibold">Адрес получения:</span> {{ order.get_delivery_address_display_full }}</p>
+            </div>
+            
+            <p class="text-gray-600 mb-8">
+                Мы свяжемся с вами в ближайшее время для подтверждения заказа.
+            </p>
+            
+            <a href="/" class="inline-block w-full bg-black text-white py-3 px-6 text-sm font-semibold uppercase hover:bg-gray-800 transition-colors duration-200">
+                Вернуться на главную
+            </a>
         </div>
-        
-        <div class="text-left space-y-2 mb-6 text-sm text-gray-700">
-            <p><span class="font-semibold">ФИО:</span> {{ order.first_name }} {{ order.last_name }}</p>
-            <p><span class="font-semibold">Телефон:</span> {{ order.phone }}</p>
-            <p><span class="font-semibold">Группа:</span> {{ order.group_number }}</p>
-            <p><span class="font-semibold">Адрес получения:</span> {{ order.get_delivery_address_display_full }}</p>
-        </div>
-        
-        <p class="text-gray-600 mb-8">
-            Мы свяжемся с вами в ближайшее время для подтверждения заказа.
-        </p>
-        
-        <a href="/" class="inline-block w-full bg-black text-white py-3 px-6 text-sm font-semibold uppercase hover:bg-gray-800 transition-colors duration-200">
-            Вернуться на главную
-        </a>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.truck-animation-container');
+    const truck = document.querySelector('.truck');
+    
+    // Устанавливаем начальные значения CSS переменных
+    gsap.set(truck, {
+        '--truck-x': '4px',
+        '--hx': 0,
+        '--bx': 0,
+        '--box-s': 0.5,
+        '--box-o': 0,
+        '--box-x': -24,
+        '--box-y': -6
+    });
+    
+    // Создаем timeline для последовательной анимации
+    const timeline = gsap.timeline({
+        onComplete: function() {
+            // После завершения всех анимаций скрываем машинку и показываем контент
+            gsap.to(container, {
+                opacity: 0,
+                height: 0,
+                duration: 0.3,
+                onComplete: function() {
+                    container.style.display = 'none';
+                    
+                    // Показываем галочку
+                    gsap.to('.success-icon', {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.5
+                    });
+                    
+                    // Показываем детали заказа
+                    gsap.to('.order-details', {
+                        opacity: 1,
+                        duration: 0.5,
+                        delay: 0.3
+                    });
+                }
+            });
+        }
+    });
+    
+    // 1. Появление коробки
+    timeline.to(truck, {
+        '--box-s': 1,
+        '--box-o': 1,
+        duration: 0.3,
+        delay: 0.5
+    });
+    
+    // 2. Движение коробки к машинке
+    timeline.to(truck, {
+        '--box-x': 0,
+        duration: 0.4
+    });
+    
+    // 3. Открытие дверей кузова
+    timeline.to(truck, {
+        '--hx': -5,
+        '--bx': 50,
+        duration: 0.18
+    });
+    
+    // 4. Опускание коробки в кузов
+    timeline.to(truck, {
+        '--box-y': 0,
+        duration: 0.1
+    });
+    
+    timeline.to(truck, {
+        '--box-s': 0.3,
+        '--box-x': 15,
+        '--box-o': 0,
+        duration: 0.4,
+        ease: 'power2.in'
+    });
+    
+    timeline.to(truck, {
+        '--hx': 0,
+        '--bx': 0,
+        duration: 0.18
+    });
+    
+    // 7. Движение машинки слева направо
+    timeline.to(truck, {
+        '--truck-x': '0px',
+        duration: 0.4
+    })
+    .to(truck, {
+        '--truck-x': '100px',
+        duration: 1
+    })
+    .to(truck, {
+        '--truck-x': '80px',
+        duration: 0.6
+    })
+    .to(truck, {
+        '--truck-x': '500px',
+        duration: 0.4
+    });
+    
+    // Анимация прогресса дороги
+    const style = document.createElement('style');
+    style.textContent = `
+        .truck-animation-container:after {
+            animation: progress-road 2.4s ease forwards 1.85s;
+        }
+        @keyframes progress-road {
+            0% { width: 0%; }
+            100% { width: calc(100% - 4rem); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+
+</body>
+</html>

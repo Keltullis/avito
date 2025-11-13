@@ -1,0 +1,10 @@
+<div class="mb-4 flex {% if message.sender.id == request.user.id %}justify-end{% else %}justify-start{% endif %}">
+    <div class="max-w-xs lg:max-w-md">
+        <div class="{% if message.sender.id == request.user.id %}bg-black text-white{% else %}bg-white border border-gray-200 text-gray-900{% endif %} rounded-lg px-4 py-2 shadow-sm">
+            <p class="text-sm">{{ message.text }}</p>
+        </div>
+        <span class="text-xs text-gray-500 mt-1 block {% if message.sender.id == request.user.id %}text-right{% else %}text-left{% endif %}">
+            {{ message.created_at|date:"H:i" }}
+        </span>
+    </div>
+</div>

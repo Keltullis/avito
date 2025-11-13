@@ -103,6 +103,14 @@
                         onclick="addToWishlist()">
                     Добавить в список желаемого
                 </button>
+                
+                <!-- Added button to contact product owner -->
+                {% if user.is_authenticated and user != product.owner %}
+                <button onclick="contactOwner()"
+                        class="w-full border border-gray-300 py-3 px-6 text-sm font-medium hover:border-gray-900 transition-colors">
+                    Связаться с владельцем
+                </button>
+                {% endif %}
             </div>
 
             <!-- Product Details -->
@@ -269,6 +277,17 @@
                 console.error('Error:', error);
                 showNotification('Ошибка при добавлении в список желаний');
             });
+        {% else %}
+            showNotification('Пожалуйста, войдите в систему');
+            setTimeout(() => {
+                window.location.href = '{% url "users:login" %}';
+            }, 1500);
+        {% endif %}
+    }
+
+    function contactOwner() {
+        {% if user.is_authenticated %}
+            window.location.href = "{% url 'chats:start_chat_with_owner' product.slug %}";
         {% else %}
             showNotification('Пожалуйста, войдите в систему');
             setTimeout(() => {

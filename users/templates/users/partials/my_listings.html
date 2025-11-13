@@ -34,12 +34,17 @@
                                        class="flex-1 text-center bg-gray-900 hover:bg-gray-800 text-white py-2 px-3 text-xs font-semibold transition-colors">
                                         Просмотр
                                     </a>
+                                    <!-- Added hx-target and hx-swap to update the entire container -->
                                     <button hx-post="{% url 'users:toggle_listing_status' product.id %}"
+                                            hx-target="#profile-main-content"
+                                            hx-swap="innerHTML"
                                             hx-confirm="Деактивировать объявление?"
                                             class="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-2 px-3 text-xs font-semibold transition-colors">
                                         Скрыть
                                     </button>
                                     <button hx-post="{% url 'users:delete_listing' product.id %}"
+                                            hx-target="#profile-main-content"
+                                            hx-swap="innerHTML"
                                             hx-confirm="Удалить объявление?"
                                             class="border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
                                         Удалить
@@ -89,12 +94,17 @@
                                 <p class="text-xs text-gray-500 mb-4">Создано: {{ product.created_at|date:"d.m.Y" }}</p>
                                 
                                 <div class="flex gap-2">
+                                    <!-- Added hx-target and hx-swap to update the entire container -->
                                     <button hx-post="{% url 'users:toggle_listing_status' product.id %}"
+                                            hx-target="#profile-main-content"
+                                            hx-swap="innerHTML"
                                             hx-confirm="Активировать объявление снова?"
                                             class="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2 px-3 text-xs font-semibold transition-colors">
                                         Активировать
                                     </button>
                                     <button hx-post="{% url 'users:delete_listing' product.id %}"
+                                            hx-target="#profile-main-content"
+                                            hx-swap="innerHTML"
                                             hx-confirm="Удалить объявление?"
                                             class="border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
                                         Удалить

@@ -23,6 +23,16 @@ class OrderForm(forms.Form):
         label='Фамилия'
     )
     
+    patronymic = forms.CharField(
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none input-checkout',
+            'placeholder': 'Отчество (необязательно)'
+        }),
+        label='Отчество'
+    )
+    
     phone = forms.CharField(
         max_length=15,
         required=True,
@@ -59,3 +69,5 @@ class OrderForm(forms.Form):
         if user:
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
+            if hasattr(user, 'patronymic'):
+                self.fields['patronymic'].initial = user.patronymic

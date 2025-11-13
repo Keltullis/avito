@@ -1,0 +1,79 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Чат с {% if other_user.first_name and other_user.last_name %}{{ other_user.first_name }} {{ other_user.last_name }}{% else %}{{ other_user.email }}{% endif %} - Swaply{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Шапка чата -->
+    <div class="bg-white border border-gray-200 rounded-t-lg p-4 flex items-center gap-4 sticky top-20 z-10">
+        <a href="{% url 'chats:chat_list' %}" 
+           hx-get="{% url 'chats:chat_list' %}" 
+           hx-target="#main-content" 
+           hx-push-url="true"
+           class="text-gray-600 hover:text-black">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        
+        <!-- Updated avatar to show initials instead of icon -->
+        <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+            <span class="text-gray-700 font-semibold text-sm">
+                {% if other_user.first_name and other_user.last_name %}
+                    {{ other_user.first_name.0|upper }}{{ other_user.last_name.0|upper }}
+                {% else %}
+                    {{ other_user.username.0|upper }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <!-- Updated to show first name and last name -->
+        <h2 class="text-xl font-bold text-gray-900">
+            {% if other_user.first_name and other_user.last_name %}
+                {{ other_user.first_name }} {{ other_user.last_name }}
+            {% else %}
+                {{ other_user.email }}
+            {% endif %}
+        </h2>
+    </div>
+    
+    <!-- Сообщения -->
+    <div class="bg-gray-50 border-x border-gray-200 p-4 min-h-[500px] max-h-[600px] overflow-y-auto" 
+         id="messages-container"
+         hx-get="{% url 'chats:get_messages' chat.id %}"
+         hx-trigger="every 3s"
+         hx-swap="innerHTML">
+        {% include 'chats/partials/message_list.html' %}
+    </div>
+    
+    <!-- Форма отправки сообщения -->
+    <div class="bg-white border border-gray-200 rounded-b-lg p-4">
+        <form hx-post="{% url 'chats:send_message' chat.id %}"
+              hx-target="#messages-container"
+              hx-swap="beforeend"
+              hx-on::after-request="this.reset(); document.getElementById('messages-container').scrollTop = document.getElementById('messages-container').scrollHeight;"
+              class="flex gap-2">
+            {% csrf_token %}
+            <input type="text" 
+                   name="message" 
+                   placeholder="Напишите сообщение..." 
+                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
+                   required>
+            <button type="submit" 
+                    class="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                Отправить
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Автоматический скролл вниз при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('messages-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

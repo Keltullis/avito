@@ -35,6 +35,7 @@ class Order(models.Model):
     order_code = models.CharField(max_length=12, unique=True, editable=False, blank=True, default='')
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    patronymic = models.CharField(max_length=50, blank=True, default='')
     phone = models.CharField(max_length=15)
     delivery_address = models.CharField(max_length=20, choices=DELIVERY_ADDRESS_CHOICES, blank=True)
     group_number = models.CharField(max_length=20, verbose_name='Номер группы', blank=True, default='')
@@ -61,7 +62,7 @@ class Order(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Заказ #{self.order_code} - {self.first_name} {self.last_name}"
+        return f"Заказ #{self.order_code} - {self.first_name} {self.patronymic} {self.last_name}"
 
     def save(self, *args, **kwargs):
         if not self.order_code:

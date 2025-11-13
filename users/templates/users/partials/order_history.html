@@ -16,7 +16,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="font-semibold text-sm text-gray-900">Заказ #{{ order.order_code }}</p>
-                            <p class="text-xs text-gray-600">{{ order.created_at|date:"d.m.Y" }}</p>
+                            <p class="text-sm text-gray-700 mt-1">{{ order.created_at|date:"d.m.Y в H:i" }}</p>
                             <span class="inline-block mt-1 px-2 py-1 text-xs font-semibold rounded-full
                                 {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
                                 {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
@@ -26,8 +26,11 @@
                                 {% endif %}">
                                 {{ order.get_status_display }}
                             </span>
+                            <!-- Fixed patronymic order - now Фамилия Имя Отчество -->
+                            <p class="text-sm text-gray-700 mt-2">
+                                <span class="font-medium">Получатель:</span> {{ order.last_name }} {{ order.first_name }}{% if order.patronymic %} {{ order.patronymic }}{% endif %}
+                            </p>
                         </div>
-                        <!-- Removed price display -->
                     </div>
                 </div>
             {% endfor %}
