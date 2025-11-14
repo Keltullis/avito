@@ -260,23 +260,31 @@
 </script>
 
 <!-- Big Summer Sale Section -->
-<section class="relative bg-[#0B0B0B] min-h-[500px] flex items-center justify-center overflow-hidden py-16 px-4 animate-fade-in-up" style="animation-delay: 0.3s;">
+<section class="relative bg-[#0B0B0B] min-h-[700px] flex items-center justify-center overflow-hidden py-16 px-4 animate-fade-in-up" style="animation-delay: 0.3s;">
+    <!-- Video Background -->
+    <div class="absolute inset-0 z-0">
+        <!-- Adjusted object-position to 30% to show more of the upper part where person's head is -->
+        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover" style="object-position: center 30%;">
+            <source src="{% static 'video/main2.mp4' %}" type="video/mp4">
+        </video>
+        <!-- Dark overlay for better text readability -->
+        <div class="absolute inset-0 bg-black opacity-70"></div>
+    </div>
+    
     <!-- Device Images -->
-    <div class="absolute left-0 top-0 w-1/3 h-full flex items-center justify-start pl-8">
+    <div class="absolute left-0 top-0 w-1/3 h-full flex items-center justify-start pl-8 z-10">
         <!-- # ФОТО 5: ПЛАНШЕТ И ТЕЛЕФОН (слева) # -->
         <!-- Путь: static/images/devices-left.png -->
       
     </div>
     
-    <div class="absolute right-0 top-0 w-1/3 h-full flex items-center justify-end pr-8">
+    <div class="absolute right-0 top-0 w-1/3 h-full flex items-center justify-end pr-8 z-10">
         <!-- # ФОТО 6: IPHONE И APPLE WATCH (справа) # -->
         <!-- Путь: static/images/devices-right.png -->
-       
-
     </div>
     
     <!-- Center Content -->
-    <div class="relative z-10 text-center max-w-2xl mx-auto">
+    <div class="relative z-20 text-center max-w-2xl mx-auto">
         <h2 class="text-4xl sm:text-5xl lg:text-6xl font-light text-white mb-4">
             Искусство Разумного <span class="font-bold">Обмена</span>
         </h2>

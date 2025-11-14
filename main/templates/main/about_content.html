@@ -1,4 +1,5 @@
 <!-- Hero Section -->
+{% load static %}
 <section class="relative bg-white py-20 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
@@ -28,7 +29,7 @@
                 </p>
             </div>
             <div class="bg-white h-96 rounded-lg flex items-center justify-center">
-                <img src="/placeholder.svg?height=400&width=600" 
+                <img src="{% static 'img/about.png' %}" 
                      alt="Команда Swaply" 
                      class="w-full h-full object-cover rounded-lg">
             </div>
@@ -125,7 +126,7 @@
             <!-- Team Member 1 -->
             <div class="text-center">
                 <div class="w-48 h-48 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
-                    <img src="/placeholder.svg?height=200&width=200" 
+                    <img src="{% static 'img/yana.jpg' %}" 
                          alt="Член команды" 
                          class="w-full h-full object-cover">
                 </div>
@@ -139,7 +140,7 @@
             <!-- Team Member 2 -->
             <div class="text-center">
                 <div class="w-48 h-48 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
-                    <img src="/placeholder.svg?height=200&width=200" 
+                    <img src="{% static 'img/ya.jpg' %}" 
                          alt="Член команды" 
                          class="w-full h-full object-cover">
                 </div>
@@ -153,7 +154,7 @@
             <!-- Team Member 3 -->
             <div class="text-center">
                 <div class="w-48 h-48 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
-                    <img src="/placeholder.svg?height=200&width=200" 
+                    <img src="{% static 'img/katya.jpg' %}" 
                          alt="Член команды" 
                          class="w-full h-full object-cover">
                 </div>

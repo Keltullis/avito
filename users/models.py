@@ -38,6 +38,7 @@ class CustomUser(AbstractUser):
     province = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     phone = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    is_moderator = models.BooleanField(default=False, verbose_name='Модератор')
 
     objects = CustomUserManager()
     username = None  # We don't use username field

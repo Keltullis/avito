@@ -1,28 +1,29 @@
 <div class="relative inline-block">
-    <input type="text" 
-           id="search-input" 
-           name="q" 
-           placeholder="SEARCH" 
-           value="{{ search_query|default:'' }}"
-           class="w-40 bg-white border border-gray-300 py-2 px-3 text-sm font-medium uppercase focus:outline-none focus:border-gray-900"
-           hx-get="{% url 'main:catalog_all' %}" 
-           hx-target="#main-content" 
-           hx-push-url="true"
-           hx-trigger="input delay:500ms"
-           hx-swap="innerHTML">
-    <button class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
-            hx-get="{% url 'main:catalog_all' %}?reset_search=true" 
-            hx-target="#search-wrapper, #mobile-search-wrapper"
-            hx-swap="innerHTML"
-            hx-on::before-request="document.getElementById('search-input').value = ''; document.getElementById('search-input').placeholder = 'SEARCH';">
-        ×
-    </button>
+    <!-- Fixed form to submit via HTMX instead of regular form submit -->
+    <form id="search-form" class="inline-block">
+        <input type="text" 
+               id="search-input" 
+               name="q" 
+               placeholder="SEARCH" 
+               value="{{ search_query|default:'' }}"
+               class="w-40 bg-white border border-gray-300 py-2 px-3 text-sm font-medium uppercase focus:outline-none focus:border-gray-900">
+        <button type="button" 
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                hx-get="{% url 'main:catalog_all' %}?reset_search=true" 
+                hx-target="#search-wrapper, #mobile-search-wrapper"
+                hx-swap="innerHTML"
+                hx-on::before-request="document.getElementById('search-input').value = ''; document.getElementById('search-input').placeholder = 'SEARCH';">
+            ×
+        </button>
+    </form>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('search-input');
-        if (searchInput) {
+        const searchForm = document.getElementById('search-form');
+        
+        if (searchInput && searchForm) {
             searchInput.addEventListener('input', function() {
                 if (this.value) {
                     this.placeholder = '';
@@ -30,6 +31,25 @@
                     this.placeholder = 'SEARCH';
                 }
             });
+            
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query) {
+                    htmx.ajax('GET', '{% url "main:catalog_all" %}?q=' + encodeURIComponent(query), {
+                        target: '#main-content',
+                        swap: 'innerHTML'
+                    });
+                }
+            });
+            
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchForm.dispatchEvent(new Event('submit'));
+                }
+            });
+            
             searchInput.focus();
         }
     });

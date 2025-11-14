@@ -22,11 +22,11 @@
         <!-- Product Images -->
         <div class="space-y-4">
             <!-- Main Image -->
-            <div class="aspect-square overflow-hidden bg-gray-100">
+            <div class="aspect-square overflow-hidden max-w-2xl mx-auto">
                 {% if product.main_image %}
                     <img src="{{ product.main_image.url }}" 
                          alt="{{ product.name }}" 
-                         class="w-full h-full object-cover">
+                         class="w-full h-full object-contain">
                 {% else %}
                     <div class="w-full h-full bg-gray-200 flex items-center justify-center">
                         <span class="text-gray-400">No Image</span>
@@ -36,12 +36,12 @@
 
             <!-- Additional Images -->
             {% if product.images.all %}
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
                 {% for image in product.images.all %}
-                <div class="aspect-square overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80">
+                <div class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 border border-gray-200">
                     <img src="{{ image.image.url }}" 
                          alt="{{ product.name }}" 
-                         class="w-full h-full object-cover"
+                         class="w-full h-full object-contain"
                          onclick="changeMainImage(this.src)">
                 </div>
                 {% endfor %}
@@ -118,7 +118,8 @@
                 <h3 class="text-sm font-medium text-gray-900 mb-3">Описание</h3>
                 <div class="prose prose-sm text-gray-600">
                     <p>{{ product.description|linebreaks }}</p>
-                    <p>Создано: {{ product.created_at|date:"F d, Y" }}</p>
+                    <!-- Changed date format to Russian format -->
+                    <p>Создано: {{ product.created_at|date:"d.m.Y" }}</p>
                 </div>
             </div>
 
@@ -126,10 +127,21 @@
             <div class="border-t border-gray-200 pt-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3">ИНФОРМАЦИЯ</h3>
                 <div class="prose prose-sm text-gray-600">
-                    <p>• Состояние: идеальное</p>
-                    <p>• Полностью исправно</p>
-                    <p>• Готово к использованию</p>
-                    <p>• Что-то подобное тут будет написано...</p>
+                    {% if product.condition %}
+                    <p>• Состояние: {{ product.get_condition_display }}</p>
+                    {% endif %}
+                    
+                    {% if product.material %}
+                    <p>• Материал: {{ product.material }}</p>
+                    {% endif %}
+                    
+                    {% if product.brand %}
+                    <p>• Бренд: {{ product.brand }}</p>
+                    {% endif %}
+                    
+                    {% if not product.condition and not product.material and not product.brand %}
+                    <p>• Информация о товаре не указана</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

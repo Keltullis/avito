@@ -10,7 +10,7 @@ from .forms import OrderForm
 from .models import Order, OrderItem
 from cart.views import CartMixin
 from cart.models import Cart
-from main.models import ProductSize
+from main.models import ProductSize, Product
 from decimal import Decimal
 import logging
 
@@ -40,7 +40,6 @@ class CheckoutView(CartMixin, View):
             return TemplateResponse(request, 'orders/partials/checkout_content.html', context)
         return render(request, 'orders/checkout.html', context)
 
-    @transaction.atomic
     def post(self, request):
         cart = self.get_cart(request)
         logger.debug(f"Checkout POST: session_key={request.session.session_key}, cart_id={cart.id}, total_items={cart.total_items}")
@@ -54,57 +53,93 @@ class CheckoutView(CartMixin, View):
         form = OrderForm(request.POST, user=request.user)
 
         if form.is_valid():
-            
-            order = Order.objects.create(
-                user=request.user,
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name'],
-                patronymic=form.cleaned_data.get('patronymic', ''),
-                phone=form.cleaned_data['phone'],
-                delivery_address=form.cleaned_data['delivery_address'],
-                group_number=form.cleaned_data['group_number'],
-                email=request.user.email,
-                status='pending',
-            )
+            try:
+                with transaction.atomic():
+                    # Создаем заказ
+                    order = Order.objects.create(
+                        user=request.user,
+                        first_name=form.cleaned_data['first_name'],
+                        last_name=form.cleaned_data['last_name'],
+                        phone=form.cleaned_data['phone'],
+                        delivery_address=form.cleaned_data['delivery_address'],
+                        group_number=form.cleaned_data['group_number'],
+                        email=request.user.email,
+                        status='pending',
+                    )
 
-            for item in cart.items.select_related('product', 'product_size'):
-                logger.debug(f"Processing cart item: product={item.product.name}, size={item.product_size.size.name}, quantity={item.quantity}")
-                
-                # Create order item
-                OrderItem.objects.create(
-                    order=order,
-                    product=item.product,
-                    size=item.product_size,
-                    quantity=item.quantity,
-                )
-                
-                # Decrease product stock
-                product = item.product
-                if product.total_stock >= item.quantity:
-                    product.total_stock -= item.quantity
+                    # Создаем элементы заказа и обновляем количество товара
+                    for item in cart.items.select_related('product', 'product_size'):
+                        logger.debug(f"Processing cart item: product={item.product.name}, size={item.product_size.size.name}, quantity={item.quantity}, stock={item.product_size.stock}")
+                        
+                        # Проверяем доступное количество
+                        if item.product_size.stock < item.quantity:
+                            error_msg = f"Недостаточно товара '{item.product.name}' размера '{item.product_size.size.name}'. Доступно: {item.product_size.stock}, запрошено: {item.quantity}"
+                            logger.error(error_msg)
+                            raise ValueError(error_msg)
+                        
+                        # Создаем элемент заказа
+                        OrderItem.objects.create(
+                            order=order,
+                            product=item.product,
+                            size=item.product_size,
+                            quantity=item.quantity,
+                        )
+                        
+                        # Уменьшаем количество товара в ProductSize
+                        item.product_size.stock -= item.quantity
+                        item.product_size.save()
+                        
+                        # Обновляем total_stock в Product
+                        product = item.product
+                        product.total_stock = sum(ps.stock for ps in product.product_sizes.all())
+                        
+                        # Если товар закончился, деактивируем его
+                        if product.total_stock == 0:
+                            product.is_active = False
+                        
+                        product.save()
+                        
+                        logger.debug(f"Updated stock for {product.name}: total_stock = {product.total_stock}, is_active = {product.is_active}")
+
+                    # Очищаем корзину
+                    cart.items.all().delete()
+                    cart.save()
+
+                    context = {
+                        'order': order,
+                        'success': True,
+                    }
                     
-                    # If stock reaches 0, deactivate product
-                    if product.total_stock == 0:
-                        product.is_active = False
-                        logger.info(f"Product {product.name} is now out of stock and deactivated")
-                    
-                    product.save()
-                    logger.debug(f"Updated stock for {product.name}: {product.total_stock} remaining")
-                else:
-                    logger.warning(f"Insufficient stock for {product.name}: requested {item.quantity}, available {product.total_stock}")
+                    if request.headers.get('HX-Request'):
+                        return TemplateResponse(request, 'orders/partials/order_success.html', context)
+                    return TemplateResponse(request, 'orders/partials/order_success.html', context)
 
-            # Clear cart
-            cart.items.all().delete()
-            cart.save()
+            except ValueError as e:
+                # Ошибка недостаточного количества товара
+                logger.error(f"Insufficient stock error: {e}")
+                context = {
+                    'form': form,
+                    'cart': cart,
+                    'cart_items': cart.items.select_related('product', 'product_size__size').order_by('-added_at'),
+                    'error_message': str(e),
+                }
+                if request.headers.get('HX-Request'):
+                    return TemplateResponse(request, 'orders/partials/checkout_content.html', context)
+                return render(request, 'orders/checkout.html', context)
 
-            context = {
-                'order': order,
-                'success': True,
-            }
-            
-            if request.headers.get('HX-Request'):
-                return TemplateResponse(request, 'orders/partials/order_success.html', context)
-            return render(request, 'orders/checkout.html', context)
+            except Exception as e:
+                # Общая ошибка
+                logger.error(f"Order creation error: {e}")
+                context = {
+                    'form': form,
+                    'cart': cart,
+                    'cart_items': cart.items.select_related('product', 'product_size__size').order_by('-added_at'),
+                    'error_message': 'Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте еще раз.',
+                }
+                if request.headers.get('HX-Request'):
+                    return TemplateResponse(request, 'orders/partials/checkout_content.html', context)
+                return render(request, 'orders/checkout.html', context)
+
         else:
             logger.warning(f"Form validation error: {form.errors}")
             context = {

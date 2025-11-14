@@ -10,6 +10,7 @@ from django.contrib import messages
 from main.models import Product, ProductImage, ProductSize, Size
 from orders.models import Order
 from main.forms import ProductForm
+from moderator.models import ProductModeration, ModerationStatus
 
 
 def register(request):
@@ -189,7 +190,7 @@ def create_listing_view(request):
         if form.is_valid():
             product = form.save(commit=False)
             product.owner = request.user
-            product.is_active = True
+            product.is_active = False
             product.save()
             
             images = request.FILES.getlist('additional_images')
@@ -213,7 +214,12 @@ def create_listing_view(request):
                     stock=product.total_stock
                 )
             
-            messages.success(request, 'Объявление успешно создано!')
+            ProductModeration.objects.create(
+                product=product,
+                status=ModerationStatus.PENDING
+            )
+            
+            messages.success(request, 'Объявление отправлено на модерацию!')
             if request.headers.get('HX-Request'):
                 return HttpResponse(status=200)
             return redirect('users:my_listings')
@@ -228,13 +234,38 @@ def create_listing_view(request):
 
 @login_required
 def my_listings_view(request):
-    """Display user's listings (both active and inactive)"""
-    active_listings = Product.objects.filter(owner=request.user, is_active=True).order_by('-created_at')
-    inactive_listings = Product.objects.filter(owner=request.user, is_active=False).order_by('-created_at')
+    """Display user's listings by moderation status"""
+    user_products = Product.objects.filter(owner=request.user).select_related('moderation')
+    
+    # Одобренные объявления
+    approved_listings = []
+    # На модерации
+    pending_listings = []
+    # Отклоненные
+    rejected_listings = []
+    
+    for product in user_products:
+        try:
+            if product.moderation.status == ModerationStatus.APPROVED:
+                approved_listings.append(product)
+            elif product.moderation.status == ModerationStatus.PENDING:
+                pending_listings.append(product)
+            elif product.moderation.status == ModerationStatus.REJECTED:
+                rejected_listings.append(product)
+        except ProductModeration.DoesNotExist:
+            # Старые товары без модерации - создаем запись и одобряем
+            ProductModeration.objects.create(
+                product=product,
+                status=ModerationStatus.APPROVED
+            )
+            product.is_active = True
+            product.save()
+            approved_listings.append(product)
     
     return TemplateResponse(request, 'users/partials/my_listings.html', {
-        'active_listings': active_listings,
-        'inactive_listings': inactive_listings
+        'approved_listings': approved_listings,
+        'pending_listings': pending_listings,
+        'rejected_listings': rejected_listings,
     })
 
 
@@ -247,34 +278,33 @@ def delete_listing(request, product_id):
         messages.success(request, 'Объявление удалено')
         
         if request.headers.get('HX-Request'):
-            active_listings = Product.objects.filter(owner=request.user, is_active=True).order_by('-created_at')
-            inactive_listings = Product.objects.filter(owner=request.user, is_active=False).order_by('-created_at')
+            user_products = Product.objects.filter(owner=request.user).select_related('moderation')
+            
+            approved_listings = []
+            pending_listings = []
+            rejected_listings = []
+            
+            for prod in user_products:
+                try:
+                    if prod.moderation.status == ModerationStatus.APPROVED:
+                        approved_listings.append(prod)
+                    elif prod.moderation.status == ModerationStatus.PENDING:
+                        pending_listings.append(prod)
+                    elif prod.moderation.status == ModerationStatus.REJECTED:
+                        rejected_listings.append(prod)
+                except ProductModeration.DoesNotExist:
+                    ProductModeration.objects.create(
+                        product=prod,
+                        status=ModerationStatus.APPROVED
+                    )
+                    prod.is_active = True
+                    prod.save()
+                    approved_listings.append(prod)
+            
             return TemplateResponse(request, 'users/partials/my_listings.html', {
-                'active_listings': active_listings,
-                'inactive_listings': inactive_listings
-            })
-        return redirect('users:my_listings')
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
-
-
-@login_required
-def toggle_listing_status(request, product_id):
-    """Toggle listing active status"""
-    if request.method == 'POST':
-        product = get_object_or_404(Product, id=product_id, owner=request.user)
-        product.is_active = not product.is_active
-        product.save()
-        
-        status = 'активировано' if product.is_active else 'деактивировано'
-        messages.success(request, f'Объявление {status}')
-        
-        if request.headers.get('HX-Request'):
-            active_listings = Product.objects.filter(owner=request.user, is_active=True).order_by('-created_at')
-            inactive_listings = Product.objects.filter(owner=request.user, is_active=False).order_by('-created_at')
-            return TemplateResponse(request, 'users/partials/my_listings.html', {
-                'active_listings': active_listings,
-                'inactive_listings': inactive_listings
+                'approved_listings': approved_listings,
+                'pending_listings': pending_listings,
+                'rejected_listings': rejected_listings,
             })
         return redirect('users:my_listings')
     

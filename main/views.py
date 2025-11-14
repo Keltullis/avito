@@ -1,9 +1,13 @@
-from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView, DetailView
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import TemplateView, DetailView, FormView
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from .models import Category, Product, Size
+from .models import Category, Product, Size, BlogPost
+from .forms import ContactForm
 from django.db.models import Q
+from moderator.models import ModerationStatus
+from django.contrib import messages
+from django.core.paginator import Paginator
 
 
 class IndexView(TemplateView):
@@ -40,7 +44,10 @@ class CatalogView(TemplateView):
         category_slug = kwargs.get('category_slug')
         categories = Category.objects.all()
         
-        products = Product.objects.all().order_by('-created_at')
+        products = Product.objects.filter(
+            is_active=True,
+            moderation__status=ModerationStatus.APPROVED
+        ).order_by('-created_at')
         
         current_category = None
         current_category_name = None
@@ -91,7 +98,9 @@ class CatalogView(TemplateView):
                 return TemplateResponse(request, 'main/search_input.html', context)
             elif context.get('reset_search'):
                 return TemplateResponse(request, 'main/search_button.html', {})
-            template = 'main/filter_modal.html' if request.GET.get('show_filters') == 'true' else 'main/catalog.html'
+            template = 'main/filter_modal.html' if request.GET.get('show_filters') == 'true' else (
+                'main/main_catalog.html' if not context['current_category'] else 'main/catalog.html'
+            )
             return TemplateResponse(request, template, context)
         return TemplateResponse(request, self.template_name, context)
     
@@ -108,7 +117,11 @@ class ProductDetailView(DetailView):
         product = self.get_object()
         context['categories'] = Category.objects.all()
         
-        related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+        related_products = Product.objects.filter(
+            category=product.category,
+            is_active=True,
+            moderation__status=ModerationStatus.APPROVED
+        ).exclude(id=product.id)[:4]
         
         context['related_products'] = related_products
         context['current_category'] = product.category.slug
@@ -146,11 +159,61 @@ class BlogView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['current_category'] = None
+        
+        # Get published blog posts
+        posts = BlogPost.objects.filter(is_published=True).order_by('-created_at')
+        
+        # Pagination
+        paginator = Paginator(posts, 6)  # 6 posts per page
+        page_number = self.request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        
+        context['posts'] = page_obj
+        context['paginator'] = paginator
+        
         return context
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
+            # If requesting a specific post modal
+            if request.GET.get('post_slug'):
+                post_slug = request.GET.get('post_slug')
+                post = get_object_or_404(BlogPost, slug=post_slug, is_published=True)
+                return TemplateResponse(request, 'main/blog_post_modal.html', {'post': post})
             return TemplateResponse(request, 'main/blog_content.html', context)
         return TemplateResponse(request, self.template_name, context)
 
+
+class ContactView(FormView):
+    template_name = 'main/contact_us.html'
+    form_class = ContactForm
+    success_url = '/contact/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        context['current_category'] = None
+        return context
+
+    def form_valid(self, form):
+        form.save()
+        if self.request.headers.get('HX-Request'):
+            return TemplateResponse(
+                self.request, 
+                'main/contact_success.html',
+                {'categories': Category.objects.all()}
+            )
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        context = self.get_context_data(form=form)
+        if self.request.headers.get('HX-Request'):
+            return TemplateResponse(self.request, 'main/contact_form.html', context)
+        return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        if request.headers.get('HX-Request'):
+            return TemplateResponse(request, 'main/contact_content.html', context)
+        return TemplateResponse(request, self.template_name, context)

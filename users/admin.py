@@ -4,8 +4,8 @@ from .models import CustomUser, Wishlist
 
 
 class CustomUserAdmin(UserAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'country')
-    list_filter = ('country',)
+    list_display = ('email', 'first_name', 'last_name', 'country', 'is_moderator', 'is_staff')
+    list_filter = ('country', 'is_moderator', 'is_staff')
     search_fields = ('email', 'first_name', 'last_name', 'company',
                      'city', 'country')
     ordering = ('email',)
@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
                        'phone')
         }),
         ('Permissions', {
-            'fields': ('is_active', 'is_staff', 'is_superuser',
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'is_moderator',
                        'groups', 'user_permissions')
         }),
         ('Important dates', {
@@ -28,7 +28,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'first_name', 'last_name', 'password1',
-                       'password2', 'is_staff', 'is_active'),
+                       'password2', 'is_staff', 'is_active', 'is_moderator'),
         }),
     )
 

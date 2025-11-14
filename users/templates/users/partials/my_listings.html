@@ -2,12 +2,14 @@
     <div>
         <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-wide">Мои объявления</h2>
         
-        <!-- Active Listings -->
+        <!-- Показываем объявления по статусу модерации вместо активные/неактивные -->
+        
+        <!-- Approved Listings -->
         <div class="mb-8">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Активные объявления</h3>
-            {% if active_listings %}
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Одобренные объявления</h3>
+            {% if approved_listings %}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {% for product in active_listings %}
+                    {% for product in approved_listings %}
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                             <div class="aspect-square overflow-hidden bg-gray-100">
                                 {% if product.main_image %}
@@ -21,7 +23,10 @@
                                 {% endif %}
                             </div>
                             <div class="p-4">
-                                <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ product.name }}</h4>
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Одобрено</span>
+                                </div>
                                 <p class="text-sm text-gray-600 mb-2">{{ product.category.name }}</p>
                                 <p class="text-sm text-gray-600 mb-2">Осталось: {{ product.total_stock }} шт.</p>
                                 <p class="text-xs text-gray-500 mb-4">Создано: {{ product.created_at|date:"d.m.Y" }}</p>
@@ -34,14 +39,6 @@
                                        class="flex-1 text-center bg-gray-900 hover:bg-gray-800 text-white py-2 px-3 text-xs font-semibold transition-colors">
                                         Просмотр
                                     </a>
-                                    <!-- Added hx-target and hx-swap to update the entire container -->
-                                    <button hx-post="{% url 'users:toggle_listing_status' product.id %}"
-                                            hx-target="#profile-main-content"
-                                            hx-swap="innerHTML"
-                                            hx-confirm="Деактивировать объявление?"
-                                            class="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-2 px-3 text-xs font-semibold transition-colors">
-                                        Скрыть
-                                    </button>
                                     <button hx-post="{% url 'users:delete_listing' product.id %}"
                                             hx-target="#profile-main-content"
                                             hx-swap="innerHTML"
@@ -56,7 +53,7 @@
                 </div>
             {% else %}
                 <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-                    <p class="text-gray-600 mb-4">У вас пока нет активных объявлений</p>
+                    <p class="text-gray-600 mb-4">У вас пока нет одобренных объявлений</p>
                     <button hx-get="{% url 'users:create_listing' %}"
                             hx-target="#profile-main-content"
                             hx-push-url="true"
@@ -67,12 +64,54 @@
             {% endif %}
         </div>
 
-        <!-- Inactive Listings (History) -->
-        {% if inactive_listings %}
-            <div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">История объявлений</h3>
+        <!-- Pending Listings -->
+        {% if pending_listings %}
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">На модерации</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {% for product in inactive_listings %}
+                    {% for product in pending_listings %}
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden opacity-90">
+                            <div class="aspect-square overflow-hidden bg-gray-100">
+                                {% if product.main_image %}
+                                    <img src="{{ product.main_image.url }}" 
+                                         alt="{{ product.name }}" 
+                                         class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-gray-400">No Image</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
+                                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">На модерации</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">{{ product.category.name }}</p>
+                                <p class="text-xs text-gray-500 mb-4">Создано: {{ product.created_at|date:"d.m.Y" }}</p>
+                                
+                                <div class="flex gap-2">
+                                    <button hx-post="{% url 'users:delete_listing' product.id %}"
+                                            hx-target="#profile-main-content"
+                                            hx-swap="innerHTML"
+                                            hx-confirm="Удалить объявление?"
+                                            class="flex-1 border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Rejected Listings -->
+        {% if rejected_listings %}
+            <div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Отклоненные объявления</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for product in rejected_listings %}
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden opacity-75">
                             <div class="aspect-square overflow-hidden bg-gray-100">
                                 {% if product.main_image %}
@@ -88,25 +127,20 @@
                             <div class="p-4">
                                 <div class="flex items-center justify-between mb-2">
                                     <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
-                                    <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Неактивно</span>
+                                    <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Отклонено</span>
                                 </div>
                                 <p class="text-sm text-gray-600 mb-2">{{ product.category.name }}</p>
+                                {% if product.moderation.rejection_reason %}
+                                    <p class="text-xs text-red-600 mb-2">Причина: {{ product.moderation.rejection_reason }}</p>
+                                {% endif %}
                                 <p class="text-xs text-gray-500 mb-4">Создано: {{ product.created_at|date:"d.m.Y" }}</p>
                                 
                                 <div class="flex gap-2">
-                                    <!-- Added hx-target and hx-swap to update the entire container -->
-                                    <button hx-post="{% url 'users:toggle_listing_status' product.id %}"
-                                            hx-target="#profile-main-content"
-                                            hx-swap="innerHTML"
-                                            hx-confirm="Активировать объявление снова?"
-                                            class="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2 px-3 text-xs font-semibold transition-colors">
-                                        Активировать
-                                    </button>
                                     <button hx-post="{% url 'users:delete_listing' product.id %}"
                                             hx-target="#profile-main-content"
                                             hx-swap="innerHTML"
                                             hx-confirm="Удалить объявление?"
-                                            class="border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
+                                            class="flex-1 border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
                                         Удалить
                                     </button>
                                 </div>

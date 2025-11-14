@@ -1,0 +1,109 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="min-h-screen p-8 bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2 tracking-wide">
+                Панель модератора
+            </h1>
+            <p class="text-gray-600">Управление объявлениями на платформе</p>
+        </div>
+
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card bg-yellow-50 p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">На модерации</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ pending_count }}</p>
+                    </div>
+                    <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="stat-card bg-green-50 p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Одобрено</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ approved_count }}</p>
+                    </div>
+                    <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="stat-card bg-red-50 p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Отклонено</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ rejected_count }}</p>
+                    </div>
+                    <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Навигация -->
+        <div class="bg-white rounded-lg shadow-lg mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                    <!-- Removed hx-target to let HTMX replace the entire #main-content -->
+                    <a href="{% url 'moderator:pending_listings' %}"
+                       hx-get="{% url 'moderator:pending_listings' %}"
+                       hx-push-url="true"
+                       class="border-b-2 border-yellow-500 py-4 px-1 text-sm font-medium text-gray-900">
+                        На модерации
+                        {% if pending_count > 0 %}
+                            <span class="ml-2 bg-yellow-100 text-yellow-800 py-0.5 px-2.5 rounded-full text-xs font-medium">{{ pending_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'moderator:approved_listings' %}"
+                       hx-get="{% url 'moderator:approved_listings' %}"
+                       hx-push-url="true"
+                       class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Одобренные
+                    </a>
+                    <a href="{% url 'moderator:rejected_listings' %}"
+                       hx-get="{% url 'moderator:rejected_listings' %}"
+                       hx-push-url="true"
+                       class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Отклоненные
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Контент -->
+            <div id="moderator-content" class="p-6">
+                {% include 'moderator/partials/pending_listings.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

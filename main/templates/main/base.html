@@ -147,7 +147,10 @@
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    О нас
                 </a>
-                <a href="#" 
+                <a href="{% url 'main:contact_us' %}" 
+                   hx-get="{% url 'main:contact_us' %}" 
+                   hx-target="#main-content" 
+                   hx-push-url="true"
                    class="mobile-nav-link block text-lg font-medium text-gray-900 hover:text-gray-700 py-2 border-b border-gray-200">
                    Связаться с нами
                 </a>
@@ -170,14 +173,27 @@
             </nav>
             
             <div class="mt-8 space-y-4">
-                <a href="{% url 'users:profile' %}" 
-                   hx-get="{% url 'users:profile' %}" 
-                   hx-target="#main-content" 
-                   hx-push-url="true"
-                   class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">
-                    ACCOUNT
-                </a>
-                <a href="#" id="mobileCart" class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">CART (0)</a>
+                {% if user.is_authenticated %}
+                    {% if user.is_moderator %}
+                        <a href="{% url 'moderator:moderator_dashboard' %}" 
+                           class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">
+                            ПАНЕЛЬ МОДЕРАТОРА
+                        </a>
+                    {% else %}
+                        <a href="{% url 'users:profile' %}" 
+                           hx-get="{% url 'users:profile' %}" 
+                           hx-target="#main-content" 
+                           hx-push-url="true"
+                           class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">
+                            ACCOUNT
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'users:login' %}" 
+                       class="block text-sm font-medium text-gray-900 hover:text-gray-700 py-2">
+                        ACCOUNT
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -219,6 +235,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         <input type="text" 
+                               id="header-search-input"
                                placeholder="Поиск" 
                                class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300">
                     </div>
@@ -233,6 +250,13 @@
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        Главная
                     </a>
+                    <a href="{% url 'main:catalog_all' %}" 
+                        hx-get="{% url 'main:catalog_all' %}" 
+                        hx-target="#main-content" 
+                        hx-push-url="true"
+                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
+                        Каталог
+                    </a>
                     <a href="{% url 'main:about' %}" 
                        hx-get="{% url 'main:about' %}" 
                        hx-target="#main-content" 
@@ -240,8 +264,11 @@
                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        О нас
                     </a>
-                    <a href="#" 
-                       class="nav-link text-base font-normal text-gray-600 hover:text-black">
+                    <a href="{% url 'main:contact_us' %}" 
+                        hx-get="{% url 'main:contact_us' %}" 
+                        hx-target="#main-content" 
+                        hx-push-url="true"
+                        class="nav-link text-base font-normal text-gray-600 hover:text-black">
                        Связаться с нами
                     </a>
                     <a href="{% url 'main:blog' %}" 
@@ -277,11 +304,23 @@
                     </a>
                     
                     <!-- Wishlist Icon - show on all devices -->
-                    <a href="#" class="text-gray-700 hover:text-black">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'users:profile' %}"
+                       hx-get="{% url 'users:profile' %}"
+                       hx-target="#main-content"
+                       hx-push-url="true"
+                       class="text-gray-700 hover:text-black">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                         </svg>
                     </a>
+                    {% else %}
+                    <a href="{% url 'users:login' %}" class="text-gray-700 hover:text-black">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </a>
+                    {% endif %}
                     
                     <!-- Cart Icon - single icon for all devices -->
                     <a href="#" id="cartIcon" class="text-gray-700 hover:text-black relative">
@@ -292,15 +331,35 @@
                     </a>
                     
                     <!-- Profile Icon - show on all devices -->
-                    <a href="{% url 'users:profile' %}" 
-                       hx-get="{% url 'users:profile' %}" 
-                       hx-target="#main-content" 
-                       hx-push-url="true"
-                       class="text-gray-700 hover:text-black">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                    </a>
+                    {% if user.is_authenticated %}
+                        {% if user.is_moderator %}
+                            <!-- Removed HTMX from moderator link to prevent duplication -->
+                            <a href="{% url 'moderator:moderator_dashboard' %}" 
+                               class="text-gray-700 hover:text-black"
+                               title="Панель модератора">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'users:profile' %}" 
+                               hx-get="{% url 'users:profile' %}" 
+                               hx-target="#main-content" 
+                               hx-push-url="true"
+                               class="text-gray-700 hover:text-black">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'users:login' %}" 
+                           class="text-gray-700 hover:text-black">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -375,7 +434,7 @@
         </div>
     </footer>
 
-    <script>
+  <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile menu functionality
             const menuToggle = document.getElementById('menuToggle');
@@ -517,7 +576,7 @@
                             }
                         } else {
                             if (badge) badge.classList.add('hidden');
-                            if (badgeMobile) badgeMobile.classList.add('hidden');
+                            if (badgeMobile) badge.classList.add('hidden');
                         }
                     })
                     .catch(error => console.log('[v0] Chat unread count error:', error));
@@ -533,6 +592,39 @@
             document.addEventListener('htmx:afterSettle', function() {
                 updateChatUnreadCount();
             });
+            
+            document.addEventListener('htmx:beforeRequest', function(e) {
+                console.log('[v0] HTMX request starting:', e.detail.requestConfig.path);
+            });
+            
+            document.addEventListener('htmx:afterRequest', function(e) {
+                console.log('[v0] HTMX request completed:', e.detail.xhr.status, e.detail.requestConfig.path);
+            });
+            
+            document.addEventListener('htmx:responseError', function(e) {
+                console.error('[v0] HTMX error:', e.detail.xhr.status, e.detail.error);
+            });
+            
+            const headerSearchInput = document.getElementById('header-search-input');
+            if (headerSearchInput) {
+                headerSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const query = this.value.trim();
+                        if (query) {
+                            htmx.ajax('GET', '{% url "main:catalog_all" %}?q=' + encodeURIComponent(query), {
+                                target: '#main-content',
+                                swap: 'innerHTML'
+                            });
+                        } else {
+                            htmx.ajax('GET', '{% url "main:catalog_all" %}', {
+                                target: '#main-content',
+                                swap: 'innerHTML'
+                            });
+                        }
+                    }
+                });
+            }
         });
         
         // Global function to update cart count
@@ -544,5 +636,6 @@
             if (mobileCartText) mobileCartText.textContent = `CART (${count})`;
         };
     </script>
+
 </body>
 </html>

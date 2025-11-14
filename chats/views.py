@@ -28,6 +28,10 @@ def chat_list(request):
     context = {
         'chat_data': chat_data,
     }
+    
+    if request.headers.get('HX-Request'):
+        return render(request, 'chats/chat_list_content.html', context)
+    
     return render(request, 'chats/chat_list.html', context)
 
 
@@ -49,6 +53,10 @@ def chat_detail(request, chat_id):
         'other_user': other_user,
         'messages': reversed(messages),  # Показываем в хронологическом порядке
     }
+    
+    if request.headers.get('HX-Request'):
+        return render(request, 'chats/chat_detail_content.html', context)
+    
     return render(request, 'chats/chat_detail.html', context)
 
 

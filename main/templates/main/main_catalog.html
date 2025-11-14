@@ -1,0 +1,255 @@
+{% block content %}
+<!-- Redesigned main catalog page to match catalog.html style -->
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb and Filters -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-12 space-y-4 sm:space-y-0">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 uppercase">
+                {% if search_query %}
+                    Результаты поиска: "{{ search_query }}"
+                {% else %}
+                    Все товары
+                {% endif %}
+            </h2>
+            {% if products %}
+            <p class="text-sm text-gray-600 mt-2">Найдено: <span id="product-count">{{ products|length }}</span> товаров</p>
+            {% endif %}
+        </div>
+        <!-- Added filters and categories buttons side by side -->
+        <div class="flex gap-2 w-full sm:w-auto">
+            <button class="flex-1 sm:flex-none bg-black text-white px-4 py-2 text-sm font-medium uppercase hover:bg-gray-800 transition-colors" 
+                    onclick="openFilterModal()">
+                Фильтры
+            </button>
+            <button class="flex-1 sm:flex-none bg-black text-white px-4 py-2 text-sm font-medium uppercase hover:bg-gray-800 transition-colors" 
+                    onclick="openCategoryModal()">
+                Категории
+            </button>
+        </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    {% if filter_params.color or filter_params.size or filter_params.material or filter_params.brand or filter_params.condition %}
+    <div class="mb-6 flex gap-2 flex-wrap">
+        {% if filter_params.color %}
+        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+            Цвет: {{ filter_params.color }}
+        </span>
+        {% endif %}
+        {% if filter_params.size %}
+        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+            Размер: {{ filter_params.size }}
+        </span>
+        {% endif %}
+        {% if filter_params.material %}
+        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+            Материал: {{ filter_params.material }}
+        </span>
+        {% endif %}
+        {% if filter_params.brand %}
+        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+            Бренд: {{ filter_params.brand }}
+        </span>
+        {% endif %}
+        {% if filter_params.condition %}
+        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+            Состояние: {{ filter_params.condition|title }}
+        </span>
+        {% endif %}
+        <a href="{% url 'main:catalog_all' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" 
+           class="px-3 py-1 bg-gray-200 text-gray-900 hover:bg-gray-300 text-sm font-medium uppercase transition-colors">
+            Сбросить фильтры
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Fixed filter modal to properly close and remove backdrop -->
+    <div id="filter-modal-container" style="display: none;"></div>
+
+    <!-- Added category selection modal -->
+    <div id="category-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-none max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold">Выберите категорию</h2>
+                <button onclick="closeCategoryModal()"
+                        class="text-gray-500 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-2">
+                {% for category in categories %}
+                <a href="javascript:void(0)" 
+                   onclick="selectCategory('{{ category.slug }}')"
+                   class="block px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium uppercase text-sm transition-colors">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    {% if products %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12" id="products-grid">
+        {% for product in products %}
+        <!-- Added data-product-name for search filtering -->
+        <div class="product-card group cursor-pointer" 
+             data-product-name="{{ product.name|lower }}"
+             data-product-color="{{ product.color|lower }}"
+             data-product-brand="{{ product.brand|lower }}"
+             hx-get="{% url 'main:product_detail' product.slug %}"
+             hx-target="#main-content"
+             hx-push-url="true">
+            <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
+                {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="product-image w-full h-full object-cover">
+                {% else %}
+                    <div class="product-image w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">No Image</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-center">
+                <h3 class="text-sm font-medium text-gray-900 mb-1 uppercase">{{ product.name }}</h3>
+                <p class="text-sm text-gray-600 mb-1 uppercase">{{ product.color }}</p>
+                {% if product.brand %}
+                <p class="text-xs text-gray-500">{{ product.brand }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4 uppercase">
+            {% if search_query %}
+                Ничего не найдено
+            {% else %}
+                Товары отсутствуют
+            {% endif %}
+        </h3>
+        <p class="text-gray-600 mb-8">
+            {% if search_query %}
+                Попробуйте изменить параметры поиска или фильтры
+            {% else %}
+                В данный момент товары недоступны
+            {% endif %}
+        </p>
+        <a href="{% url 'main:index' %}" 
+           hx-get="{% url 'main:index' %}" 
+           hx-target="#main-content" 
+           hx-push-url="true"
+           class="bg-black text-white px-6 py-3 text-sm font-medium uppercase hover:bg-gray-800 transition-colors">
+            На главную
+        </a>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Listen for search from header
+        document.addEventListener('htmx:afterSettle', function(e) {
+            // Check if we're on catalog page
+            if (window.location.pathname.includes('/catalog')) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const searchQuery = urlParams.get('q');
+                
+                if (searchQuery) {
+                    filterProducts(searchQuery);
+                }
+            }
+        });
+        
+        function filterProducts(query) {
+            const productCards = document.querySelectorAll('.product-card');
+            let visibleCount = 0;
+            
+            productCards.forEach(function(card) {
+                const name = card.getAttribute('data-product-name') || '';
+                const color = card.getAttribute('data-product-color') || '';
+                const brand = card.getAttribute('data-product-brand') || '';
+                
+                const searchText = name + ' ' + color + ' ' + brand;
+                
+                if (query === '' || searchText.includes(query.toLowerCase())) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            const countElement = document.getElementById('product-count');
+            if (countElement) {
+                countElement.textContent = visibleCount;
+            }
+        }
+    });
+
+    function openFilterModal() {
+        const container = document.getElementById('filter-modal-container');
+        htmx.ajax('GET', '{% url "main:catalog_all" %}?show_filters=true{% if search_query %}&q={{ search_query|urlencode }}{% endif %}', {
+            target: '#filter-modal-container',
+            swap: 'innerHTML'
+        }).then(() => {
+            container.style.display = 'block';
+        });
+    }
+
+    function closeFilterModal() {
+        const container = document.getElementById('filter-modal-container');
+        container.style.display = 'none';
+        container.innerHTML = '';
+    }
+
+    function openCategoryModal() {
+        const modal = document.getElementById('category-modal');
+        modal.style.display = 'flex';
+    }
+
+    function closeCategoryModal() {
+        const modal = document.getElementById('category-modal');
+        modal.style.display = 'none';
+    }
+    
+    function selectCategory(categorySlug) {
+        htmx.ajax('GET', '/catalog/' + categorySlug + '/', {
+            target: '#main-content',
+            swap: 'innerHTML'
+        }).then(() => {
+            closeCategoryModal();
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        const filterContainer = document.getElementById('filter-modal-container');
+        const categoryModal = document.getElementById('category-modal');
+        
+        if (event.target === filterContainer) {
+            closeFilterModal();
+        }
+        if (event.target === categoryModal) {
+            closeCategoryModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %}

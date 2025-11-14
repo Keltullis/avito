@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, ProductImage, ProductSize, Size
+from .models import Product, ProductImage, ProductSize, Size, ContactMessage
 
 
 class ProductForm(forms.ModelForm):
@@ -64,4 +64,27 @@ class ProductForm(forms.ModelForm):
         }
 
 
-# Multiple images will be handled through HTML input with multiple attribute in template
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ['phone', 'email', 'message']
+        widgets = {
+            'phone': forms.TextInput(attrs={
+                'class': 'w-full border border-gray-300 py-3 px-4 text-sm focus:outline-none focus:border-gray-900',
+                'placeholder': '+7 (___) ___-__-__'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full border border-gray-300 py-3 px-4 text-sm focus:outline-none focus:border-gray-900',
+                'placeholder': 'your@email.com'
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'w-full border border-gray-300 py-3 px-4 text-sm focus:outline-none focus:border-gray-900',
+                'rows': 6,
+                'placeholder': 'Ваш вопрос...'
+            }),
+        }
+        labels = {
+            'phone': 'Номер телефона',
+            'email': 'Email',
+            'message': 'Ваш вопрос',
+        }

@@ -20,5 +20,4 @@ urlpatterns = [
     path('create-listing/', views.create_listing_view, name='create_listing'),
     path('my-listings/', views.my_listings_view, name='my_listings'),
     path('listing/delete/<int:product_id>/', views.delete_listing, name='delete_listing'),
-    path('listing/toggle/<int:product_id>/', views.toggle_listing_status, name='toggle_listing_status'),
 ]
