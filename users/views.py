@@ -4,25 +4,119 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
-from .forms import CustomUserCreationForm, CustomUserLoginForm, CustomUserUpdateForm
+from .forms import CustomUserCreationForm, CustomUserLoginForm, CustomUserUpdateForm, EmailVerificationForm
 from .models import CustomUser, Wishlist
 from django.contrib import messages
 from main.models import Product, ProductImage, ProductSize, Size
 from orders.models import Order
 from main.forms import ProductForm
 from moderator.models import ProductModeration, ModerationStatus
+import random
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('main:index')
+            # Generate 6-digit verification code
+            verification_code = str(random.randint(100000, 999999))
+            
+            # Store registration data and code in session
+            request.session['registration_data'] = {
+                'email': form.cleaned_data['email'],
+                'first_name': form.cleaned_data['first_name'],
+                'last_name': form.cleaned_data['last_name'],
+                'password1': form.cleaned_data['password1'],
+                'verification_code': verification_code,
+            }
+            
+            # Send verification email
+            try:
+                send_mail(
+                    'Подтверждение регистрации',
+                    f'Ваш код подтверждения: {verification_code}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [form.cleaned_data['email']],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Код подтверждения отправлен на вашу почту')
+            except Exception as e:
+                messages.error(request, f'Ошибка отправки email: {str(e)}')
+                # For development - show code in console
+                print(f'[v0] Verification code for {form.cleaned_data["email"]}: {verification_code}')
+            
+            return redirect('users:verify_email')
     else:
         form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})
+
+
+def verify_email(request):
+    # Check if registration data exists in session
+    if 'registration_data' not in request.session:
+        messages.error(request, 'Данные регистрации не найдены')
+        return redirect('users:register')
+    
+    if request.method == 'POST':
+        form = EmailVerificationForm(request.POST)
+        if form.is_valid():
+            entered_code = form.cleaned_data['code']
+            registration_data = request.session.get('registration_data')
+            stored_code = registration_data.get('verification_code')
+            
+            if entered_code == stored_code:
+                # Create user
+                user = CustomUser.objects.create_user(
+                    email=registration_data['email'],
+                    first_name=registration_data['first_name'],
+                    last_name=registration_data['last_name'],
+                    password=registration_data['password1']
+                )
+                
+                # Clear session data
+                del request.session['registration_data']
+                
+                # Log user in
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.success(request, 'Регистрация успешно завершена!')
+                return redirect('main:index')
+            else:
+                messages.error(request, 'Неверный код подтверждения')
+    else:
+        form = EmailVerificationForm()
+    
+    email = request.session.get('registration_data', {}).get('email', '')
+    return render(request, 'users/verify_email.html', {'form': form, 'email': email})
+
+
+def resend_verification_code(request):
+    if 'registration_data' not in request.session:
+        return JsonResponse({'success': False, 'message': 'Данные регистрации не найдены'})
+    
+    # Generate new code
+    verification_code = str(random.randint(100000, 999999))
+    registration_data = request.session['registration_data']
+    registration_data['verification_code'] = verification_code
+    request.session['registration_data'] = registration_data
+    
+    # Send email
+    try:
+        send_mail(
+            'Подтверждение регистрации',
+            f'Ваш новый код подтверждения: {verification_code}',
+            settings.DEFAULT_FROM_EMAIL,
+            [registration_data['email']],
+            fail_silently=False,
+        )
+        print(f'[v0] New verification code for {registration_data["email"]}: {verification_code}')
+        return JsonResponse({'success': True, 'message': 'Новый код отправлен на вашу почту'})
+    except Exception as e:
+        print(f'[v0] Error sending email: {str(e)}')
+        print(f'[v0] Verification code: {verification_code}')
+        return JsonResponse({'success': False, 'message': f'Ошибка отправки: {str(e)}'})
+
 
 
 def login_view(request):
@@ -111,7 +205,15 @@ def logout_view(request):
 
 @login_required
 def order_history(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders_as_buyer = list(Order.objects.filter(user=request.user))
+    orders_as_seller = list(Order.objects.filter(
+        items__product__owner=request.user
+    ).distinct())
+    
+    # Combine both lists and remove duplicates by converting to set of IDs, then query again
+    order_ids = set([o.id for o in orders_as_buyer] + [o.id for o in orders_as_seller])
+    orders = Order.objects.filter(id__in=order_ids).order_by('-created_at')
+    
     if request.headers.get('HX-Request'):
         return TemplateResponse(request, 'users/partials/order_history_full.html', {
             'orders': orders
@@ -123,18 +225,33 @@ def order_history(request):
 
 @login_required
 def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return TemplateResponse(request, 'users/partials/order_detail.html', {'order': order})
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__product__owner'), 
+        id=order_id
+    )
+    
+    # Check if user is buyer or seller of any item
+    is_buyer = order.user == request.user
+    is_seller = order.items.filter(product__owner=request.user).exists()
+    
+    if not (is_buyer or is_seller):
+        return HttpResponse("Доступ запрещен", status=403)
+    
+    return TemplateResponse(request, 'users/partials/order_detail.html', {
+        'order': order,
+        'is_buyer': is_buyer,
+        'is_seller': is_seller
+    })
 
 
-@login_required
+@login_required(login_url='/users/login')
 def wishlist_view(request):
     """Display user's wishlist"""
     wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
     return TemplateResponse(request, 'users/partials/wishlist.html', {'wishlist_items': wishlist_items})
 
 
-@login_required
+@login_required(login_url='/users/login')
 def add_to_wishlist(request, product_slug):
     """Add product to wishlist via AJAX"""
     if request.method == 'POST':
@@ -158,7 +275,7 @@ def add_to_wishlist(request, product_slug):
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
 
-@login_required
+@login_required(login_url='/users/login')
 def remove_from_wishlist(request, wishlist_id):
     """Remove item from wishlist"""
     if request.method in ['POST', 'DELETE']:
@@ -174,7 +291,7 @@ def remove_from_wishlist(request, wishlist_id):
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
 
-@login_required
+@login_required(login_url='/users/login')
 def check_wishlist_status(request, product_slug):
     """Check if product is in user's wishlist"""
     product = get_object_or_404(Product, slug=product_slug)
@@ -182,7 +299,7 @@ def check_wishlist_status(request, product_slug):
     return JsonResponse({'in_wishlist': in_wishlist})
 
 
-@login_required
+@login_required(login_url='/users/login')
 def create_listing_view(request):
     """Display create listing form"""
     if request.method == 'POST':
@@ -193,26 +310,45 @@ def create_listing_view(request):
             product.is_active = False
             product.save()
             
-            images = request.FILES.getlist('additional_images')
+            images = request.FILES.getlist('additional_images')[:5]
             for image in images:
                 ProductImage.objects.create(product=product, image=image)
             
-            sizes = form.cleaned_data.get('sizes')
-            if sizes:
-                stock_per_size = product.total_stock // len(sizes) if len(sizes) > 0 else product.total_stock
-                for size in sizes:
-                    ProductSize.objects.create(
-                        product=product,
-                        size=size,
-                        stock=stock_per_size
-                    )
-            else:
-                default_size, created = Size.objects.get_or_create(name='One Size')
+            no_size = request.POST.get('no_size')
+            custom_size_value = request.POST.get('custom_size')
+            
+            if no_size:
+                no_size_obj, created = Size.objects.get_or_create(name='Нет размера')
                 ProductSize.objects.create(
                     product=product,
-                    size=default_size,
+                    size=no_size_obj,
                     stock=product.total_stock
                 )
+            elif custom_size_value and custom_size_value.strip():
+                custom_size_obj, created = Size.objects.get_or_create(name=custom_size_value.strip())
+                ProductSize.objects.create(
+                    product=product,
+                    size=custom_size_obj,
+                    stock=product.total_stock
+                )
+            else:
+                sizes = form.cleaned_data.get('sizes')
+                if sizes:
+                    stock_per_size = product.total_stock // len(sizes) if len(sizes) > 0 else product.total_stock
+                    for size in sizes:
+                        if size.name != 'One Size':
+                            ProductSize.objects.create(
+                                product=product,
+                                size=size,
+                                stock=stock_per_size
+                            )
+                else:
+                    default_size, created = Size.objects.get_or_create(name='One Size')
+                    ProductSize.objects.create(
+                        product=product,
+                        size=default_size,
+                        stock=product.total_stock
+                    )
             
             ProductModeration.objects.create(
                 product=product,
@@ -232,16 +368,13 @@ def create_listing_view(request):
     })
 
 
-@login_required
+@login_required(login_url='/users/login')
 def my_listings_view(request):
     """Display user's listings by moderation status"""
     user_products = Product.objects.filter(owner=request.user).select_related('moderation')
     
-    # Одобренные объявления
     approved_listings = []
-    # На модерации
     pending_listings = []
-    # Отклоненные
     rejected_listings = []
     
     for product in user_products:
@@ -253,7 +386,6 @@ def my_listings_view(request):
             elif product.moderation.status == ModerationStatus.REJECTED:
                 rejected_listings.append(product)
         except ProductModeration.DoesNotExist:
-            # Старые товары без модерации - создаем запись и одобряем
             ProductModeration.objects.create(
                 product=product,
                 status=ModerationStatus.APPROVED
@@ -269,7 +401,7 @@ def my_listings_view(request):
     })
 
 
-@login_required
+@login_required(login_url='/users/login')
 def delete_listing(request, product_id):
     """Delete a listing"""
     if request.method == 'POST':

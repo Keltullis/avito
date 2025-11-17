@@ -1,3 +1,4 @@
+{% extends 'main/base.html' %}
 {% block content %}
 <style>
     .dotted-input {
@@ -7,8 +8,9 @@
         outline: none;
         transition: border-color 0.3s ease;
     }
+    /* Updated focus color to teal theme */
     .dotted-input:focus {
-        border-bottom-color: #374151;
+        border-bottom-color: #2F5959;
     }
     .dotted-input::placeholder {
         color: #6b7280;
@@ -49,10 +51,14 @@
                 {% endif %}
             </div>
             
+            <!-- Updated buttons to teal theme -->
             <div class="grid grid-cols-2 gap-4 pt-4">
                 <button 
                     type="submit"
-                    class="bg-black hover:bg-gray-500 text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
+                    class="text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
+                    style="background-color: #2F5959;"
+                    onmouseover="this.style.backgroundColor='#3d6b6b'"
+                    onmouseout="this.style.backgroundColor='#2F5959'"
                 >
                     ВОЙТИ
                 </button>

@@ -4,7 +4,7 @@
     {% if wishlist_items %}
         <div class="space-y-4">
             {% for item in wishlist_items %}
-            <div class="border border-gray-200 p-4 hover:border-gray-900 transition-colors">
+            <div class="border border-gray-200 p-4 hover:border-[#2F5959] transition-colors">
                 <div class="flex gap-4">
                     <!-- Product Image -->
                     <div class="w-24 h-24 flex-shrink-0 bg-gray-100 overflow-hidden">
@@ -37,7 +37,7 @@
                     <!-- Action Buttons -->
                     <div class="flex flex-col gap-2 justify-center">
                         <button 
-                            class="px-4 py-2 bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
+                            class="px-4 py-2 bg-[#2F5959] text-white text-xs font-medium hover:bg-[#254545] transition-colors whitespace-nowrap"
                             hx-get="{% url 'main:product_detail' item.product.slug %}"
                             hx-target="#main-content"
                             hx-push-url="true">
@@ -45,7 +45,7 @@
                         </button>
                         <!-- Removed hx-confirm and changed to POST method for better CSRF handling -->
                         <button 
-                            class="px-4 py-2 border border-gray-300 text-gray-900 text-xs font-medium hover:border-gray-900 transition-colors whitespace-nowrap"
+                            class="px-4 py-2 border border-gray-300 text-gray-900 text-xs font-medium hover:border-[#2F5959] transition-colors whitespace-nowrap"
                             hx-post="{% url 'users:remove_from_wishlist' item.id %}"
                             hx-target="#profile-main-content"
                             hx-swap="innerHTML">
@@ -64,7 +64,7 @@
             <h3 class="text-sm font-medium text-gray-900 mb-2">Ваш список желаний пуст</h3>
             <p class="text-sm text-gray-600 mb-4">Добавьте товары, которые вам нравятся</p>
             <button 
-                class="px-6 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                class="px-6 py-2 bg-[#2F5959] text-white text-sm font-medium hover:bg-[#254545] transition-colors"
                 hx-get="{% url 'main:index' %}"
                 hx-target="#main-content"
                 hx-push-url="true">

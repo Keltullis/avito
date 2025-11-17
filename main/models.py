@@ -35,12 +35,14 @@ class Size(models.Model):
 class ProductSize(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE,
                                 related_name='product_sizes')
-    size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    size = models.ForeignKey(Size, on_delete=models.CASCADE, null=True, blank=True)
+    custom_size = models.CharField(max_length=50, blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)
 
 
     def __str__(self):
-        return f"{self.size.name} ({self.stock} in stock) for {self.product.name}"
+        size_name = self.custom_size if self.custom_size else (self.size.name if self.size else "Без размера")
+        return f"{size_name} ({self.stock} in stock) for {self.product.name}"
 
 
 class Product(models.Model):
@@ -50,12 +52,13 @@ class Product(models.Model):
     slug = models.CharField(max_length=100, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE,
                                  related_name='products')
-    color = models.CharField(max_length=100)
+    color = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True)
     main_image = models.ImageField(upload_to='products/main/')
     
     is_active = models.BooleanField(default=True)
     total_stock = models.PositiveIntegerField(default=0)
+    no_size = models.BooleanField(default=False)
     
     condition = models.CharField(max_length=50, blank=True, 
                                  choices=[

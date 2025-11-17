@@ -11,11 +11,12 @@
         <p class="text-xs text-gray-600">✓ Выберите категорию</p>
         <p class="text-xs text-gray-600">✓ Укажите количество</p>
     </div>
+    <!-- Updated button colors to teal theme -->
     <button 
         hx-get="{% url 'users:create_listing' %}" 
         hx-target="#profile-main-content" 
         hx-push-url="true"
-        class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-4 transition-colors duration-200 text-sm tracking-wide"
+        class="w-full bg-[#2F5959] hover:bg-[#254545] text-white font-semibold py-3 px-4 transition-colors duration-200 text-sm tracking-wide"
     >
         Создать объявление
     </button>

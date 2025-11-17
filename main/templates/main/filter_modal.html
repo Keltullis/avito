@@ -22,38 +22,19 @@
             <input type="hidden" name="q" value="{{ search_query }}">
             {% endif %}
 
-            <!-- Color Filter -->
+            <!-- Добавлен фильтр по категории -->
+            <!-- Category Filter -->
             <div>
-                <label class="block text-sm font-semibold mb-2">Цвет</label>
-                <input type="text" 
-                       name="color" 
-                       value="{{ filter_params.color }}"
-                       placeholder="Введите цвет"
-                       class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
-            </div>
-
-            <!-- Size Filter -->
-            <div>
-                <label class="block text-sm font-semibold mb-2">Размер</label>
-                <select name="size" 
+                <label class="block text-sm font-semibold mb-2">Категория</label>
+                <select name="category" 
                         class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
-                    <option value="">Все размеры</option>
-                    {% for size in sizes %}
-                    <option value="{{ size.name }}" {% if filter_params.size == size.name %}selected{% endif %}>
-                        {{ size.name }}
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if filter_params.category == category.slug or current_category == category.slug %}selected{% endif %}>
+                        {{ category.name }}
                     </option>
                     {% endfor %}
                 </select>
-            </div>
-
-            <!-- Material Filter -->
-            <div>
-                <label class="block text-sm font-semibold mb-2">Материал</label>
-                <input type="text" 
-                       name="material" 
-                       value="{{ filter_params.material }}"
-                       placeholder="Введите материал"
-                       class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
             </div>
 
             <!-- Brand Filter -->
@@ -77,6 +58,45 @@
                     <option value="good" {% if filter_params.condition == 'good' %}selected{% endif %}>Хорошее</option>
                     <option value="fair" {% if filter_params.condition == 'fair' %}selected{% endif %}>Удовлетворительное</option>
                 </select>
+            </div>
+
+            <!-- Оставлен фильтр по цвету как универсальный -->
+            <!-- Color Filter -->
+            <div>
+                <label class="block text-sm font-semibold mb-2">Цвет</label>
+                <input type="text" 
+                       name="color" 
+                       value="{{ filter_params.color }}"
+                       placeholder="Введите цвет"
+                       class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
+            </div>
+
+            <!-- Размер теперь опциональный, не для всех категорий -->
+            <!-- Size Filter (mainly for clothing) -->
+            {% if sizes %}
+            <div>
+                <label class="block text-sm font-semibold mb-2">Размер (для одежды и обуви)</label>
+                <select name="size" 
+                        class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
+                    <option value="">Все размеры</option>
+                    {% for size in sizes %}
+                    <option value="{{ size.name }}" {% if filter_params.size == size.name %}selected{% endif %}>
+                        {{ size.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <!-- Материал теперь опциональный -->
+            <!-- Material Filter (optional) -->
+            <div>
+                <label class="block text-sm font-semibold mb-2">Материал (опционально)</label>
+                <input type="text" 
+                       name="material" 
+                       value="{{ filter_params.material }}"
+                       placeholder="Например: хлопок, пластик, металл"
+                       class="w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900">
             </div>
 
             <!-- Action Buttons -->
@@ -104,7 +124,13 @@
                 const formData = new FormData(filterForm);
                 const params = new URLSearchParams(formData);
                 
-                const url = '{% if current_category %}{% url "main:catalog" category_slug=current_category %}{% else %}{% url "main:catalog_all" %}{% endif %}?' + params.toString();
+                const categoryValue = formData.get('category');
+                let url;
+                if (categoryValue) {
+                    url = '/catalog/' + categoryValue + '/?' + params.toString();
+                } else {
+                    url = '{% url "main:catalog_all" %}?' + params.toString();
+                }
                 
                 htmx.ajax('GET', url, {
                     target: '#main-content',

@@ -1,3 +1,19 @@
+
 {% for message in messages %}
-    {% include 'chats/partials/message_item.html' with message=message %}
+<div class="mb-4 flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+    <div class="max-w-[70%]">
+        <!-- Updated message bubble colors - user messages now use teal (#2F5959) -->
+        <div class="px-4 py-2 rounded-lg {% if message.sender == request.user %}text-white{% else %}bg-gray-200 text-gray-900{% endif %}"
+             style="{% if message.sender == request.user %}background-color: #2F5959;{% endif %}">
+            <p class="text-sm">{{ message.text }}</p>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 {% if message.sender == request.user %}text-right{% endif %}">
+            {{ message.created_at|date:"H:i" }}
+        </p>
+    </div>
+</div>
+{% empty %}
+<div class="text-center text-gray-500 py-8">
+    <p>Нет сообщений. Начните диалог!</p>
+</div>
 {% endfor %}

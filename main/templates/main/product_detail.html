@@ -1,3 +1,6 @@
+{% extends "main/base.html" %}
+
+{% block content %}
 <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb -->
     <div class="mb-8">
@@ -55,7 +58,10 @@
                 <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-2">
                     {{ product.name|upper }}
                 </h1>
+                <!-- Hide color if empty or None -->
+                {% if product.color %}
                 <p class="text-lg text-gray-600 mb-4">{{ product.color|upper }}</p>
+                {% endif %}
             </div>
 
             <!-- Sizes -->
@@ -97,14 +103,12 @@
                     Добавить в корзину
                 </button>
                 
-                <!-- Updated wishlist button to work with backend -->
                 <button id="add-to-wishlist-btn"
                         class="w-full border border-gray-300 py-3 px-6 text-sm font-medium hover:border-gray-900 transition-colors"
                         onclick="addToWishlist()">
                     Добавить в список желаемого
                 </button>
                 
-                <!-- Added button to contact product owner -->
                 {% if user.is_authenticated and user != product.owner %}
                 <button onclick="contactOwner()"
                         class="w-full border border-gray-300 py-3 px-6 text-sm font-medium hover:border-gray-900 transition-colors">
@@ -118,7 +122,6 @@
                 <h3 class="text-sm font-medium text-gray-900 mb-3">Описание</h3>
                 <div class="prose prose-sm text-gray-600">
                     <p>{{ product.description|linebreaks }}</p>
-                    <!-- Changed date format to Russian format -->
                     <p>Создано: {{ product.created_at|date:"d.m.Y" }}</p>
                 </div>
             </div>
@@ -151,12 +154,10 @@
     {% if related_products %}
     <div class="mt-16 border-t border-gray-200 pt-16">
         <h2 class="text-xl font-bold tracking-tight text-gray-900 mb-8">Вам может подойти:</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {% for related_product in related_products %}
             <div class="product-card group cursor-pointer" 
-                 hx-get="{% url 'main:product_detail' related_product.slug %}"
-                 hx-target="#main-content"
-                 hx-push-url="true">
+                 onclick="window.location.href='{% url 'main:product_detail' related_product.slug %}'">
                 <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
                     {% if related_product.main_image %}
                         <img src="{{ related_product.main_image.url }}" 
@@ -170,7 +171,10 @@
                 </div>
                 <div class="text-center">
                     <h3 class="text-sm font-medium text-gray-900 mb-1">{{ related_product.name|upper }}</h3>
+                    <!-- Hide color if empty or None -->
+                    {% if related_product.color %}
                     <p class="text-sm text-gray-600 mb-1">{{ related_product.color|upper }}</p>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -208,20 +212,16 @@
         if (checkedRadio) {
             selectedSize = checkedRadio.dataset.size;
             selectedSizeId = checkedRadio.value;
-            console.log('Updated Selected Size:', selectedSize, 'ID:', selectedSizeId);
         } else {
             selectedSize = null;
             selectedSizeId = null;
-            console.log('No valid size selected');
         }
     }
 
     function addToCart() {
         const productSlug = '{{ product.slug }}';
-        console.log('Product Slug:', productSlug);
         
         updateSelectedSize();
-        console.log('Selected Size ID:', selectedSizeId);
 
         if (!selectedSizeId) {
             showNotification('Please select a size');
@@ -238,12 +238,8 @@
                 'X-CSRFToken': getCookie('csrftoken')
             }
         })
-        .then(response => {
-            console.log('Response Status:', response.status);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Response Data:', data);
             if (data.error) {
                 showNotification(data.error);
             } else {
@@ -342,10 +338,8 @@
     function initializeSizeRadios() {
         const sizeRadios = document.querySelectorAll('.size-radio');
         const addToCartBtn = document.getElementById('add-to-cart-btn');
-        console.log('Size Radios Found:', sizeRadios.length);
 
         if (sizeRadios.length === 0) {
-            console.log('No size radios available');
             addToCartBtn.disabled = true;
             addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
             showNotification('No sizes available');
@@ -353,10 +347,8 @@
         }
 
         const availableRadios = Array.from(sizeRadios).filter(radio => !radio.disabled);
-        console.log('Available Size Radios:', availableRadios.length);
 
         if (availableRadios.length === 0) {
-            console.log('All sizes are out of stock');
             addToCartBtn.disabled = true;
             addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
             showNotification('All sizes are out of stock');
@@ -367,7 +359,6 @@
         if (!checkedRadio && availableRadios.length > 0) {
             availableRadios[0].checked = true;
             checkedRadio = availableRadios[0];
-            console.log('Auto-checked first available radio:', checkedRadio.dataset.size, 'ID:', checkedRadio.value);
         }
 
         updateSelectedSize();
@@ -375,10 +366,8 @@
         sizeRadios.forEach(radio => {
             radio.addEventListener('change', function(e) {
                 if (this.disabled) {
-                    console.log('Changed disabled radio:', this.dataset.size);
                     return;
                 }
-                console.log('Radio Changed - Selected Size:', this.dataset.size, 'ID:', this.value);
                 updateSelectedSize();
                 addToCartBtn.disabled = false;
                 addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -400,3 +389,4 @@
         });
     });
 </script>
+{% endblock %}

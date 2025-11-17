@@ -1,0 +1,152 @@
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb and Filters -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-12 space-y-4 sm:space-y-0">
+        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 uppercase">
+            {% if current_category_name %}
+                {{ current_category_name|upper }} > Новинки
+            {% else %}
+                Список вещей
+            {% endif %}
+        </h2>
+        <button class="px-4 py-2 text-sm font-medium uppercase transition-colors w-full sm:w-auto" 
+                style="background-color: #2F5959; color: white;"
+                onmouseover="this.style.backgroundColor='#3d6b6b'"
+                onmouseout="this.style.backgroundColor='#2F5959'"
+                onclick="openFilterModal()">
+            Фильтры
+        </button>
+    </div>
+
+    <div id="filter-modal-container" style="display: none;"></div>
+
+    <!-- Active Filters Display -->
+    {% if filter_params.color or filter_params.size or filter_params.material or filter_params.brand or filter_params.condition or filter_params.category %}
+    <div class="mb-6 flex gap-2 flex-wrap">
+        {% if filter_params.category %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Категория: {{ filter_params.category }}
+        </span>
+        {% endif %}
+        {% if filter_params.brand %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Бренд: {{ filter_params.brand }}
+        </span>
+        {% endif %}
+        {% if filter_params.condition %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Состояние: {{ filter_params.condition|title }}
+        </span>
+        {% endif %}
+        {% if filter_params.color %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Цвет: {{ filter_params.color }}
+        </span>
+        {% endif %}
+        {% if filter_params.size %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Размер: {{ filter_params.size }}
+        </span>
+        {% endif %}
+        {% if filter_params.material %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Материал: {{ filter_params.material }}
+        </span>
+        {% endif %}
+        <a href="{% url 'main:catalog' category_slug=current_category %}" 
+           class="px-3 py-1 bg-gray-200 text-gray-900 hover:bg-gray-300 text-sm font-medium uppercase transition-colors">
+            Сбросить фильтры
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Product Grid -->
+    {% if products %}
+    <!-- Changed from lg:grid-cols-3 to lg:grid-cols-5 for wider catalog grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12">
+        {% for product in products %}
+        <!-- Removed hx-get to fix htmx issue with styles on reload - using regular links -->
+        <a href="{% url 'main:product_detail' product.slug %}" 
+           class="product-card group cursor-pointer block">
+            <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
+                {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="product-image w-full h-full object-cover">
+                {% else %}
+                    <div class="product-image w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">No Image</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-center">
+                <h3 class="text-sm font-medium text-gray-900 mb-1 uppercase">{{ product.name }}</h3>
+                {% if product.color %}
+                <p class="text-sm text-gray-600 mb-1 uppercase">{{ product.color }}</p>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Товары не найдены</h3>
+        <p class="text-gray-600 mb-8">
+            {% if current_category %}
+                В этой категории пока нет товаров.
+            {% else %}
+                В данный момент товары недоступны.
+            {% endif %}
+        </p>
+        <a href="{% url 'main:index' %}" 
+           hx-get="{% url 'main:index' %}" 
+           hx-target="#main-content" 
+           hx-push-url="true"
+           class="px-6 py-3 text-sm font-medium uppercase transition-colors text-white"
+           style="background-color: #2F5959;"
+           onmouseover="this.style.backgroundColor='#3d6b6b'"
+           onmouseout="this.style.backgroundColor='#2F5959'">
+            На главную
+        </a>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+    function openFilterModal() {
+        const container = document.getElementById('filter-modal-container');
+        htmx.ajax('GET', '{% url "main:catalog" category_slug=current_category %}?show_filters=true', {
+            target: '#filter-modal-container',
+            swap: 'innerHTML'
+        }).then(() => {
+            container.style.display = 'block';
+        });
+    }
+
+    function closeFilterModal() {
+        const container = document.getElementById('filter-modal-container');
+        container.style.display = 'none';
+        container.innerHTML = '';
+    }
+
+    document.addEventListener('click', function(event) {
+        const filterContainer = document.getElementById('filter-modal-container');
+        
+        if (event.target === filterContainer) {
+            closeFilterModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>

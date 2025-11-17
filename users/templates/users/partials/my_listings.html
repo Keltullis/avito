@@ -31,12 +31,13 @@
                                 <p class="text-sm text-gray-600 mb-2">Осталось: {{ product.total_stock }} шт.</p>
                                 <p class="text-xs text-gray-500 mb-4">Создано: {{ product.created_at|date:"d.m.Y" }}</p>
                                 
+                                <!-- Updated button colors to teal theme -->
                                 <div class="flex gap-2">
                                     <a href="{% url 'main:product_detail' product.slug %}"
                                        hx-get="{% url 'main:product_detail' product.slug %}"
                                        hx-target="#main-content"
                                        hx-push-url="true"
-                                       class="flex-1 text-center bg-gray-900 hover:bg-gray-800 text-white py-2 px-3 text-xs font-semibold transition-colors">
+                                       class="flex-1 text-center bg-[#2F5959] hover:bg-[#254545] text-white py-2 px-3 text-xs font-semibold transition-colors">
                                         Просмотр
                                     </a>
                                     <button hx-post="{% url 'users:delete_listing' product.id %}"
@@ -54,10 +55,11 @@
             {% else %}
                 <div class="bg-white p-8 rounded-lg shadow-lg text-center">
                     <p class="text-gray-600 mb-4">У вас пока нет одобренных объявлений</p>
+                    <!-- Updated button to teal theme -->
                     <button hx-get="{% url 'users:create_listing' %}"
                             hx-target="#profile-main-content"
                             hx-push-url="true"
-                            class="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-2 px-6 transition-colors text-sm">
+                            class="bg-[#2F5959] hover:bg-[#254545] text-white font-semibold py-2 px-6 transition-colors text-sm">
                         Создать первое объявление
                     </button>
                 </div>
@@ -140,7 +142,7 @@
                                             hx-target="#profile-main-content"
                                             hx-swap="innerHTML"
                                             hx-confirm="Удалить объявление?"
-                                            class="flex-1 border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
+                                            class="border border-red-300 hover:border-red-400 text-red-600 py-2 px-3 text-xs font-semibold transition-colors">
                                         Удалить
                                     </button>
                                 </div>

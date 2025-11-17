@@ -12,14 +12,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {% for post in posts %}
         <article class="bg-white border border-gray-200 hover:border-gray-900 transition-all group">
-            <!-- Post Image -->
             <div class="aspect-video overflow-hidden bg-gray-100">
                 <img src="{{ post.image.url }}" 
                      alt="{{ post.title }}"
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             </div>
             
-            <!-- Post Content -->
             <div class="p-6">
                 <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
                     <span>{{ post.author }}</span>
@@ -33,11 +31,13 @@
                 
                 <p class="text-gray-600 mb-4 line-clamp-3">{{ post.excerpt }}</p>
                 
+                <!-- Updated button color to teal theme -->
                 <button 
                     hx-get="{% url 'main:blog' %}?post_slug={{ post.slug }}"
                     hx-target="#blog-modal"
                     hx-swap="innerHTML"
-                    class="text-gray-900 font-semibold hover:underline inline-flex items-center gap-2">
+                    class="font-semibold hover:underline inline-flex items-center gap-2"
+                    style="color: #2F5959;">
                     Читать далее
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -72,7 +72,8 @@
 
         {% for num in posts.paginator.page_range %}
             {% if posts.number == num %}
-            <span class="px-4 py-2 bg-gray-900 text-white font-semibold">{{ num }}</span>
+            <!-- Updated active page button to teal theme -->
+            <span class="px-4 py-2 text-white font-semibold" style="background-color: #2F5959;">{{ num }}</span>
             {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
             <a href="?page={{ num }}"
                hx-get="{% url 'main:blog' %}?page={{ num }}"
@@ -111,10 +112,10 @@
     </div>
     {% endif %}
 
-    <!-- Newsletter Subscription Section -->
-    <div class="bg-gray-900 text-white p-8 md:p-12 text-center">
+    <!-- Updated newsletter section to teal theme -->
+    <div class="text-white p-8 md:p-12 text-center" style="background-color: #2F5959;">
         <h2 class="text-3xl font-bold mb-4">Подпишитесь на рассылку</h2>
-        <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+        <p class="text-gray-100 mb-6 max-w-2xl mx-auto">
             Получайте последние новости, эксклюзивные предложения и советы по стилю прямо на почту
         </p>
         
@@ -122,26 +123,29 @@
             <button 
                 id="subscribe-btn"
                 onclick="handleSubscribe(this)"
-                class="w-full bg-white text-gray-900 py-3 px-6 font-semibold hover:bg-gray-100 transition-colors">
+                class="w-full bg-white py-3 px-6 font-semibold transition-colors"
+                style="color: #2F5959;"
+                onmouseover="this.style.backgroundColor='#f3f4f6'"
+                onmouseout="this.style.backgroundColor='white'"
+            >
                 Подписаться
             </button>
         </div>
     </div>
 </div>
 
-<!-- Modal Container for Blog Posts -->
 <div id="blog-modal"></div>
 
 <script>
 function handleSubscribe(btn) {
-    // Toggle subscription state
     if (btn.classList.contains('subscribed')) {
-        btn.classList.remove('subscribed', 'bg-green-500');
-        btn.classList.add('bg-white');
+        btn.classList.remove('subscribed');
+        btn.style.backgroundColor = 'white';
         btn.textContent = 'Подписаться';
     } else {
-        btn.classList.add('subscribed', 'bg-green-500');
-        btn.classList.remove('bg-white');
+        btn.classList.add('subscribed');
+        btn.style.backgroundColor = '#10b981';
+        btn.style.color = 'white';
         btn.textContent = 'Вы подписаны ✓';
     }
 }

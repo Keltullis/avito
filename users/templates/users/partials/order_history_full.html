@@ -17,7 +17,6 @@
                         <div class="flex-1">
                             <p class="font-semibold text-base text-gray-900">Заказ #{{ order.order_code }}</p>
                             <p class="text-sm text-gray-600 mt-1">{{ order.created_at|date:"d.m.Y в H:i" }}</p>
-                            <!-- Fixed patronymic order - now Фамилия Имя Отчество -->
                             <p class="text-sm text-gray-700 mt-2">
                                 <span class="font-medium">Получатель:</span> {{ order.last_name }} {{ order.first_name }}{% if order.patronymic %} {{ order.patronymic }}{% endif %}
                             </p>
@@ -27,6 +26,25 @@
                             <p class="text-sm text-gray-700">
                                 <span class="font-medium">Адрес:</span> {{ order.get_delivery_address_display_full }}
                             </p>
+                            <!-- Show sender info in order list -->
+                            {% for item in order.items.all %}
+                                {% if item.product.owner == request.user %}
+                                <p class="text-sm mt-2 p-2 bg-green-50 rounded border-l-2 border-green-400">
+                                    <span class="font-medium text-green-900">Вы - отправитель</span><br>
+                                    <span class="text-xs text-green-800">Номер заказа: {{ order.order_code }}</span>
+                                </p>
+                                {% endif %}
+                            {% endfor %}
+                            {% if order.user != request.user %}
+                                {% for item in order.items.all %}
+                                    {% if item.product.owner != request.user %}
+                                    <p class="text-sm mt-2 p-2 bg-blue-50 rounded border-l-2 border-blue-400">
+                                        <span class="font-medium text-blue-900">Отправитель:</span> 
+                                        <span class="text-blue-800">{{ item.product.owner.last_name }} {{ item.product.owner.first_name }}</span>
+                                    </p>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </div>
                         <div class="text-right">
                             <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
@@ -64,7 +82,7 @@
         <div class="text-center py-12">
             <p class="text-gray-600 mb-4">У вас ещё не было заказов</p>
             <a href="{% url 'main:index' %}" 
-               class="inline-block bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 text-sm tracking-wide">
+               class="inline-block bg-[#2F5959] hover:bg-[#254545] text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 text-sm tracking-wide">
                 Начать покупки
             </a>
         </div>

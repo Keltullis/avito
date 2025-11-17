@@ -4,15 +4,19 @@
         <span class="font-semibold">{{ cart.total_items }}</span>
     </div>
     
-    <div class="border-t pt-4">
+    <div class="border-t pt-4" style="border-color: #2F5959;">
+        <!-- Checkout button recolored to #2F5959 -->
         <a href="{% url 'orders:checkout' %}" 
-           class="block w-full bg-black text-white text-center py-4 px-6 text-sm font-semibold uppercase hover:bg-gray-800 transition-colors duration-200">
+           class="block w-full text-white text-center py-4 px-6 text-sm font-semibold uppercase hover:opacity-90 transition-opacity duration-200"
+           style="background-color: #2F5959;">
             Заказать
         </a>
     </div>
     
+    <!-- Continue shopping button recolored with #2F5959 border and text -->
     <button onclick="closeCart()" 
-            class="w-full border border-gray-300 text-gray-700 py-3 px-6 text-sm font-semibold uppercase hover:bg-gray-50 transition-colors duration-200">
+            class="w-full py-3 px-6 text-sm font-semibold uppercase hover:bg-opacity-90 transition-colors duration-200"
+            style="border: 2px solid #2F5959; color: #2F5959; background-color: transparent;">
         Продолжить покупки
     </button>
 </div>

@@ -9,11 +9,29 @@ class ProductForm(forms.ModelForm):
         required=False,
         label='Размеры (если применимо)'
     )
+    custom_size = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900',
+            'placeholder': 'Например: 44, M, 42-44',
+            'id': 'custom_size_input',
+            'style': 'display: none;'
+        }),
+        label='Укажите размер'
+    )
+    no_size = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'border border-gray-300',
+            'id': 'no_size_checkbox'
+        }),
+        label='Нет размера'
+    )
     
     class Meta:
         model = Product
         fields = ['name', 'category', 'color', 'description', 'main_image', 
-                  'total_stock', 'condition', 'material', 'brand']
+                  'total_stock', 'condition', 'material', 'brand', 'no_size']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900',
@@ -24,7 +42,7 @@ class ProductForm(forms.ModelForm):
             }),
             'color': forms.TextInput(attrs={
                 'class': 'w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900',
-                'placeholder': 'Цвет'
+                'placeholder': 'Цвет (необязательно)'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'w-full border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:border-gray-900',
@@ -54,7 +72,7 @@ class ProductForm(forms.ModelForm):
         labels = {
             'name': 'Название',
             'category': 'Категория',
-            'color': 'Цвет',
+            'color': 'Цвет (необязательно)',
             'description': 'Описание',
             'main_image': 'Главное фото',
             'total_stock': 'Количество',
@@ -62,6 +80,10 @@ class ProductForm(forms.ModelForm):
             'material': 'Материал',
             'brand': 'Бренд',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['color'].required = False
 
 
 class ContactForm(forms.ModelForm):

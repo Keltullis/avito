@@ -39,6 +39,26 @@
             </div>
         </div>
         
+        <!-- Added sender/owner information section -->
+        {% if order.items.all.0.product.owner %}
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация об отправителе</h3>
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg space-y-2 text-sm">
+                <p><span class="font-medium text-gray-700">ФИО:</span> <span class="text-gray-900">{{ order.items.all.0.product.owner.last_name }} {{ order.items.all.0.product.owner.first_name }}</span></p>
+                {% if order.items.all.0.product.owner.phone %}
+                <p><span class="font-medium text-gray-700">Телефон:</span> <span class="text-gray-900">{{ order.items.all.0.product.owner.phone }}</span></p>
+                {% endif %}
+                {% if order.items.all.0.product.owner.email %}
+                <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-900">{{ order.items.all.0.product.owner.email }}</span></p>
+                {% endif %}
+                <div class="mt-3 p-3 bg-blue-100 rounded border-l-4 border-blue-500">
+                    <p class="font-semibold text-blue-900">📦 Номер заказа для отправки: {{ order.order_code }}</p>
+                    <p class="text-xs text-blue-700 mt-1">Используйте этот номер при отправке посылки</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Order Items -->
         <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Товары в заказе</h3>
@@ -59,18 +79,17 @@
                         
                         <div class="flex-1">
                             <h4 class="font-semibold text-sm text-gray-900">{{ item.product.name }}</h4>
+                            <!-- Hide color if empty or None -->
+                            {% if item.product.color %}
                             <p class="text-xs text-gray-600 mt-1">Цвет: {{ item.product.color }}</p>
+                            {% endif %}
                             <p class="text-xs text-gray-600">Размер: {{ item.size.size.name }}</p>
                             <p class="text-xs text-gray-600">Количество: {{ item.quantity }}</p>
                         </div>
-                        
-                        <!-- Removed price display -->
                     </div>
                 {% endfor %}
             </div>
         </div>
-        
-        <!-- Removed total price section -->
         
         <!-- Close Button -->
         <div class="mt-6">

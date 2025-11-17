@@ -1,4 +1,5 @@
-<div class="max-w-4xl mx-auto px-4 py-8">
+<!-- Added min-height to push footer to bottom -->
+<div class="max-w-4xl mx-auto px-4 py-8 min-h-[calc(100vh-20rem)]">
     <h1 class="text-3xl font-bold mb-8">Мои чаты</h1>
     
     {% if chat_data %}
@@ -11,8 +12,8 @@
                    class="block bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4 flex-1">
-                            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                                <span class="text-gray-700 font-semibold">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: #2F5959;">
+                                <span class="text-white font-semibold">
                                     {% if item.other_user.first_name and item.other_user.last_name %}
                                         {{ item.other_user.first_name.0|upper }}{{ item.other_user.last_name.0|upper }}
                                     {% else %}
@@ -50,7 +51,7 @@
                             {% endif %}
                             
                             {% if item.unread_count > 0 %}
-                                <span class="bg-black text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                                <span class="text-white text-xs rounded-full w-6 h-6 flex items-center justify-center" style="background-color: #2F5959;">
                                     {{ item.unread_count }}
                                 </span>
                             {% endif %}

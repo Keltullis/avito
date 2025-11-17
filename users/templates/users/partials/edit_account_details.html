@@ -7,7 +7,7 @@
         transition: border-color 0.3s ease;
     }
     .dotted-input:focus {
-        border-bottom-color: #374151;
+        border-bottom-color: #2F5959;
     }
     .dotted-input::placeholder {
         color: #6b7280;
@@ -101,17 +101,17 @@
     <div class="flex gap-4">
         <button 
             type="submit"
-            class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
+            class="bg-[#2F5959] hover:bg-[#254545] text-white font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
         >
-            Save
+            Сохранить
         </button>
         <button 
             type="button"
             hx-get="{% url 'users:account_details' %}" 
             hx-target="#account-details-content" 
-            class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
+            class="border-2 border-gray-300 hover:border-[#2F5959] text-gray-700 hover:text-[#2F5959] font-semibold py-2 px-4 transition-colors duration-200 text-sm tracking-wide"
         >
-            Cancel
+            Отмена
         </button>
     </div>
 </form>

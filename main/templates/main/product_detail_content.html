@@ -1,0 +1,395 @@
+<main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <nav class="text-sm text-gray-600">
+            <a href="{% url 'main:index' %}" 
+               hx-get="{% url 'main:index' %}" 
+               hx-target="#main-content" 
+               hx-push-url="true"
+               class="hover:text-gray-900">ГЛАВНАЯ</a>
+            <span class="mx-2">/</span>
+            <a href="{% url 'main:catalog' product.category.slug %}" 
+               hx-get="{% url 'main:catalog' product.category.slug %}" 
+               hx-target="#main-content" 
+               hx-push-url="true"
+               class="hover:text-gray-900">{{ product.category.name|upper }}</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900">{{ product.name|upper }}</span>
+        </nav>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <!-- Product Images -->
+        <div class="space-y-4">
+            <!-- Main Image -->
+            <div class="aspect-square overflow-hidden max-w-2xl mx-auto">
+                {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-contain">
+                {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">No Image</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Additional Images -->
+            {% if product.images.all %}
+            <div class="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
+                {% for image in product.images.all %}
+                <div class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 border border-gray-200">
+                    <img src="{{ image.image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-contain"
+                         onclick="changeMainImage(this.src)">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div class="space-y-6">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-2">
+                    {{ product.name|upper }}
+                </h1>
+                {% if product.color %}
+                <p class="text-lg text-gray-600 mb-4">{{ product.color|upper }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Sizes -->
+            {% if product.product_sizes.all %}
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Размеры</h3>
+                <div class="grid grid-cols-4 gap-2">
+                    {% for product_size in product.product_sizes.all %}
+                    <div class="size-option">
+                        <input type="radio" 
+                               name="size" 
+                               class="size-radio hidden"
+                               id="size-{{ product_size.id }}"
+                               value="{{ product_size.id }}"
+                               data-size="{{ product_size.size.name }}"
+                               {% if product_size.stock == 0 %}disabled{% endif %}
+                               {% if forloop.first and product_size.stock > 0 %}checked{% endif %}>
+                        <label for="size-{{ product_size.id }}"
+                               class="block border-2 border-[#2F5959] py-2 px-3 text-sm font-medium text-center cursor-pointer text-[#2F5959] hover:bg-[#2F5959] hover:text-white transition-all {% if product_size.stock == 0 %}opacity-50 cursor-not-allowed{% endif %}">
+                            {{ product_size.size.name }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Размеры</h3>
+                <p class="text-sm text-gray-600">No sizes available</p>
+            </div>
+            {% endif %}
+
+            <!-- Add to Cart -->
+            <div class="space-y-4">
+                <button id="add-to-cart-btn" 
+                        class="w-full bg-[#2F5959] text-white py-3 px-6 text-sm font-medium hover:bg-[#234444] transition-colors"
+                        onclick="addToCart()"
+                        {% if not product.product_sizes.all %}disabled{% endif %}>
+                    Добавить в корзину
+                </button>
+                
+                <button id="add-to-wishlist-btn"
+                        class="w-full border-2 border-[#2F5959] text-[#2F5959] py-3 px-6 text-sm font-medium hover:bg-[#2F5959] hover:text-white transition-colors"
+                        onclick="addToWishlist()">
+                    Добавить в список желаемого
+                </button>
+                
+                {% if user.is_authenticated and user != product.owner %}
+                <button onclick="contactOwner()"
+                        class="w-full border-2 border-[#2F5959] text-[#2F5959] py-3 px-6 text-sm font-medium hover:bg-[#2F5959] hover:text-white transition-colors">
+                    Связаться с владельцем
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Product Details -->
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Описание</h3>
+                <div class="prose prose-sm text-gray-600">
+                    <p>{{ product.description|linebreaks }}</p>
+                    <p>Создано: {{ product.created_at|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Care Instructions -->
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-sm font-medium text-gray-900 mb-3">ИНФОРМАЦИЯ</h3>
+                <div class="prose prose-sm text-gray-600">
+                    {% if product.condition %}
+                    <p>• Состояние: {{ product.get_condition_display }}</p>
+                    {% endif %}
+                    
+                    {% if product.material %}
+                    <p>• Материал: {{ product.material }}</p>
+                    {% endif %}
+                    
+                    {% if product.brand %}
+                    <p>• Бренд: {{ product.brand }}</p>
+                    {% endif %}
+                    
+                    {% if not product.condition and not product.material and not product.brand %}
+                    <p>• Информация о товаре не указана</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-16 border-t border-gray-200 pt-16">
+        <h2 class="text-xl font-bold tracking-tight text-gray-900 mb-8">Вам может подойти:</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {% for related_product in related_products %}
+            <div class="product-card group cursor-pointer" 
+                 onclick="window.location.href='{% url 'main:product_detail' related_product.slug %}'">
+                <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
+                    {% if related_product.main_image %}
+                        <img src="{{ related_product.main_image.url }}" 
+                             alt="{{ related_product.name }}" 
+                             class="product-image w-full h-full object-cover">
+                    {% else %}
+                        <div class="product-image w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-400 text-sm">No Image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="text-center">
+                    <h3 class="text-sm font-medium text-gray-900 mb-1">{{ related_product.name|upper }}</h3>
+                    {% if related_product.color %}
+                    <p class="text-sm text-gray-600 mb-1">{{ related_product.color|upper }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</main>
+
+<style>
+    /* Updated all colors to teal theme */
+    .size-radio:checked + label {
+        background-color: #2F5959 !important;
+        color: white !important;
+        border-color: #2F5959 !important;
+    }
+    .size-radio:disabled + label {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #e5e7eb !important;
+        border-color: #d1d5db !important;
+        color: #9ca3af !important;
+    }
+    .size-option label:not(.size-radio:disabled + label):hover {
+        background-color: #2F5959;
+        color: white;
+        border-color: #2F5959;
+    }
+</style>
+
+<script>
+    let selectedSize = null;
+    let selectedSizeId = null;
+
+    function changeMainImage(src) {
+        const mainImg = document.querySelector('.aspect-square img');
+        if (mainImg) {
+            mainImg.src = src;
+        }
+    }
+
+    function updateSelectedSize() {
+        const sizeRadios = document.querySelectorAll('.size-radio');
+        const checkedRadio = Array.from(sizeRadios).find(radio => radio.checked && !radio.disabled);
+        if (checkedRadio) {
+            selectedSize = checkedRadio.dataset.size;
+            selectedSizeId = checkedRadio.value;
+        } else {
+            selectedSize = null;
+            selectedSizeId = null;
+        }
+    }
+
+    function addToCart() {
+        const productSlug = '{{ product.slug }}';
+        
+        updateSelectedSize();
+
+        if (!selectedSizeId) {
+            showNotification('Please select a size');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('size_id', selectedSizeId);
+        formData.append('quantity', '1');
+        fetch(`{% url 'cart:add_to_cart' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productSlug), {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification(data.error);
+            } else {
+                updateHeaderCartCount(data.total_items);
+                showNotification(data.message);
+                htmx.ajax('GET', '{% url "cart:cart_modal" %}', {
+                    target: '#cart-container',
+                    swap: 'innerHTML'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error adding to cart');
+        });
+    }
+    
+    function addToWishlist() {
+        const productSlug = '{{ product.slug }}';
+        const btn = document.getElementById('add-to-wishlist-btn');
+        
+        {% if user.is_authenticated %}
+            fetch(`{% url 'users:add_to_wishlist' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productSlug), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message);
+                    btn.textContent = 'В списке желаний ✓';
+                    btn.classList.add('bg-[#2F5959]', 'text-white');
+                    btn.classList.remove('border-[#2F5959]', 'text-[#2F5959]');
+                    btn.disabled = true;
+                } else {
+                    showNotification(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Ошибка при добавлении в список желаний');
+            });
+        {% else %}
+            showNotification('Пожалуйста, войдите в систему');
+            setTimeout(() => {
+                window.location.href = '{% url "users:login" %}';
+            }, 1500);
+        {% endif %}
+    }
+
+    function contactOwner() {
+        {% if user.is_authenticated %}
+            window.location.href = "{% url 'chats:start_chat_with_owner' product.slug %}";
+        {% else %}
+            showNotification('Пожалуйста, войдите в систему');
+            setTimeout(() => {
+                window.location.href = '{% url "users:login" %}';
+            }, 1500);
+        {% endif %}
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-20 right-4 bg-[#2F5959] text-white px-6 py-3 rounded shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    function initializeSizeRadios() {
+        const sizeRadios = document.querySelectorAll('.size-radio');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+        if (sizeRadios.length === 0) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            showNotification('No sizes available');
+            return;
+        }
+
+        const availableRadios = Array.from(sizeRadios).filter(radio => !radio.disabled);
+
+        if (availableRadios.length === 0) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            showNotification('All sizes are out of stock');
+            return;
+        }
+
+        let checkedRadio = Array.from(sizeRadios).find(radio => radio.checked && !radio.disabled);
+        if (!checkedRadio && availableRadios.length > 0) {
+            availableRadios[0].checked = true;
+            checkedRadio = availableRadios[0];
+        }
+
+        updateSelectedSize();
+
+        sizeRadios.forEach(radio => {
+            radio.addEventListener('change', function(e) {
+                if (this.disabled) {
+                    return;
+                }
+                updateSelectedSize();
+                addToCartBtn.disabled = false;
+                addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeSizeRadios);
+    document.addEventListener('htmx:afterSwap', initializeSizeRadios);
+
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+</script>

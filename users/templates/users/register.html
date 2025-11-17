@@ -1,3 +1,4 @@
+{% extends 'main/base.html' %}
 {% block content %}
 <style>
     .dotted-input {
@@ -7,8 +8,9 @@
         outline: none;
         transition: border-color 0.3s ease;
     }
+    /* Updated focus color to teal theme */
     .dotted-input:focus {
-        border-bottom-color: #374151;
+        border-bottom-color: #2F5959;
     }
     .dotted-input::placeholder {
         color: #6b7280;
@@ -19,7 +21,7 @@
 <div class="min-h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 class="text-2xl font-bold text-gray-900 mb-8 text-center tracking-wide">
-            CREATE AN ACCOUNT
+            СОЗДАТЬ АККАУНТ
         </h1>
         
         {% if messages %}
@@ -70,16 +72,20 @@
                     <div class="text-red-500 text-xs mt-1">{{ form.password2.errors }}</div>
                 {% endif %}
                 <div id="passwordError" class="text-red-500 text-xs mt-1 hidden">
-                    Passwords do not match
+                    Пароли не совпадают
                 </div>
             </div>
             
+            <!-- Updated buttons to teal theme -->
             <div class="grid grid-cols-2 gap-4 pt-4">
                 <button 
                     type="submit"
-                    class="bg-black hover:bg-gray-500 text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
+                    class="text-white font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide"
+                    style="background-color: #2F5959;"
+                    onmouseover="this.style.backgroundColor='#3d6b6b'"
+                    onmouseout="this.style.backgroundColor='#2F5959'"
                 >
-                    CREATE AN ACCOUNT
+                    СОЗДАТЬ АККАУНТ
                 </button>
                 <a 
                     href="{% url 'users:login' %}"
@@ -88,7 +94,7 @@
                     hx-push-url="true"
                     class="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold py-3 px-6 transition-colors duration-200 text-sm tracking-wide text-center"
                 >
-                    LOGIN
+                    ВОЙТИ
                 </a>
             </div>
         </form>

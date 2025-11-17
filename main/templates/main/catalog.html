@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}{{ current_category_name|default:"Каталог" }} - Swaply{% endblock %}
+
 {% block content %}
 <main class="mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumb and Filters -->
@@ -9,42 +13,48 @@
                 Список вещей
             {% endif %}
         </h2>
-        <!-- Updated button to open filter modal properly -->
-        <button class="bg-black text-white px-4 py-2 text-sm font-medium uppercase hover:bg-gray-800 transition-colors w-full sm:w-auto" 
+        <button class="px-4 py-2 text-sm font-medium uppercase transition-colors w-full sm:w-auto" 
+                style="background-color: #2F5959; color: white;"
+                onmouseover="this.style.backgroundColor='#3d6b6b'"
+                onmouseout="this.style.backgroundColor='#2F5959'"
                 onclick="openFilterModal()">
             Фильтры
         </button>
     </div>
 
-    <!-- Changed filter modal container structure to match main_catalog.html -->
     <div id="filter-modal-container" style="display: none;"></div>
 
     <!-- Active Filters Display -->
-    {% if filter_params.color or filter_params.size or filter_params.material or filter_params.brand or filter_params.condition %}
+    {% if filter_params.color or filter_params.size or filter_params.material or filter_params.brand or filter_params.condition or filter_params.category %}
     <div class="mb-6 flex gap-2 flex-wrap">
-        {% if filter_params.color %}
-        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
-            Цвет: {{ filter_params.color }}
-        </span>
-        {% endif %}
-        {% if filter_params.size %}
-        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
-            Размер: {{ filter_params.size }}
-        </span>
-        {% endif %}
-        {% if filter_params.material %}
-        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
-            Материал: {{ filter_params.material }}
+        {% if filter_params.category %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Категория: {{ filter_params.category }}
         </span>
         {% endif %}
         {% if filter_params.brand %}
-        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
             Бренд: {{ filter_params.brand }}
         </span>
         {% endif %}
         {% if filter_params.condition %}
-        <span class="px-3 py-1 bg-gray-900 text-white text-sm font-medium uppercase">
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
             Состояние: {{ filter_params.condition|title }}
+        </span>
+        {% endif %}
+        {% if filter_params.color %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Цвет: {{ filter_params.color }}
+        </span>
+        {% endif %}
+        {% if filter_params.size %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Размер: {{ filter_params.size }}
+        </span>
+        {% endif %}
+        {% if filter_params.material %}
+        <span class="px-3 py-1 text-white text-sm font-medium uppercase" style="background-color: #2F5959;">
+            Материал: {{ filter_params.material }}
         </span>
         {% endif %}
         <a href="{% url 'main:catalog' category_slug=current_category %}" 
@@ -56,12 +66,9 @@
 
     <!-- Product Grid -->
     {% if products %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12">
         {% for product in products %}
-        <div class="product-card group cursor-pointer" 
-             hx-get="{% url 'main:product_detail' product.slug %}"
-             hx-target="#main-content"
-             hx-push-url="true">
+        <a href="{% url 'main:product_detail' product.slug %}" class="product-card group cursor-pointer block">
             <div class="aspect-square overflow-hidden bg-gray-100 mb-4">
                 {% if product.main_image %}
                     <img src="{{ product.main_image.url }}" 
@@ -75,9 +82,11 @@
             </div>
             <div class="text-center">
                 <h3 class="text-sm font-medium text-gray-900 mb-1 uppercase">{{ product.name }}</h3>
+                {% if product.color %}
                 <p class="text-sm text-gray-600 mb-1 uppercase">{{ product.color }}</p>
+                {% endif %}
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
     {% else %}
@@ -94,7 +103,10 @@
            hx-get="{% url 'main:index' %}" 
            hx-target="#main-content" 
            hx-push-url="true"
-           class="bg-black text-white px-6 py-3 text-sm font-medium uppercase hover:bg-gray-800 transition-colors">
+           class="px-6 py-3 text-sm font-medium uppercase transition-colors text-white"
+           style="background-color: #2F5959;"
+           onmouseover="this.style.backgroundColor='#3d6b6b'"
+           onmouseout="this.style.backgroundColor='#2F5959'">
             На главную
         </a>
     </div>
@@ -118,7 +130,6 @@
         container.innerHTML = '';
     }
 
-    // Close modal when clicking outside
     document.addEventListener('click', function(event) {
         const filterContainer = document.getElementById('filter-modal-container');
         
@@ -127,7 +138,6 @@
         }
     });
 
-    // Product card hover and click functionality
     document.addEventListener('DOMContentLoaded', function() {
         const productCards = document.querySelectorAll('.product-card');
         productCards.forEach(card => {
